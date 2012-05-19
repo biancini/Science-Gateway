@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry including="**/*.java" kind="src" output="build/test-classes" path="test/src"/>
+	<classpathentry excluding="**/*.java" kind="src" output="build/test-classes" path="test/resources"/>
+	<classpathentry including="**/*.java" kind="src" path="src"/>
+	<classpathentry excluding="**/*.java" kind="src" path="resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="JSAGA_LIB/jsaga-engine-0.9.15-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="JSAGA_LIB/junit-3.8.2.jar"/>
+	<classpathentry kind="var" path="JSAGA_LIB/saga-api-1.1.1.jar"/>
+	<classpathentry kind="var" path="JSAGA_LIB/saga-api-test-0.9.15-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="JSAGA_LIB/jsaga-adaptoritf-0.9.15-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="JSAGA_LIB/jsaga-adaptor-classic-0.9.15-SNAPSHOT.jar"/>
+	<classpathentry kind="var" path="GRIDWAY_LIB/lib/drmaa.jar"/>
+	<classpathentry kind="var" path="JSAGA_LIB/log4j-1.2.16.jar"/>
+	<classpathentry kind="var" path="GLOBUS_WSCORE/lib/cog-jglobus.jar"/>
+	<classpathentry kind="output" path="build/classes"/>
+</classpath>

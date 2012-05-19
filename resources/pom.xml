@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <artifactId>adaptors</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>fr.in2p3.jsaga.adaptor</groupId>
+    <artifactId>jsaga-adaptor-gos</artifactId>
+    <version>0.9.15-SNAPSHOT</version>
+    <name>jsaga-adaptor-gos</name>
+    <description>CHANGEME: Write a short description of plug-ins provided by this module.</description>
+    <developers>
+        <developer>
+            <name>CHANGEME</name>
+            <email>CHANGEME</email>
+            <organization>CHANGEME</organization>
+            <organizationUrl>CHANGEME</organizationUrl>
+            <properties>
+                <organizationLogoUrl>CHANGEME</organizationLogoUrl>
+                <project>CHANGEME</project>
+                <projectUrl>CHANGEME</projectUrl>
+                <projectLogoUrl>CHANGEME</projectLogoUrl>
+            </properties>
+        </developer>
+    </developers>
+    <build>
+        <sourceDirectory>src</sourceDirectory>
+        <testSourceDirectory>test/src</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>resources</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>test/resources</directory>
+            </testResource>
+        </testResources>
+    </build>
+</project>
