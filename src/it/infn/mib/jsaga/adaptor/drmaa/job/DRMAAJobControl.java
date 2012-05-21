@@ -12,8 +12,10 @@ import fr.in2p3.jsaga.adaptor.job.monitor.JobMonitorAdaptor;
 import it.infn.mib.jsaga.adaptor.drmaa.DRMAAAdaptorAbstract;
 
 import org.apache.log4j.Logger;
+import org.ggf.drmaa.AuthorizationException;
 import org.ggf.drmaa.DrmaaException;
 import org.ggf.drmaa.JobTemplate;
+import org.ggf.drmaa.Session;
 import org.globus.rsl.ParseException;
 import org.globus.rsl.RSLParser;
 import org.globus.rsl.RslNode;
@@ -26,7 +28,16 @@ public class DRMAAJobControl extends DRMAAAdaptorAbstract implements JobControlA
 	private Logger logger = Logger.getLogger(DRMAAJobControl.class);
 	
 	public void cancel(String nativeJobId) throws PermissionDeniedException, TimeoutException, NoSuccessException {
-		// TODO Method not yet implemented, INFN
+		logger.debug("Trying to cancel job with id " + nativeJobId + ".");
+		try {			
+			getSession().control(nativeJobId, Session.TERMINATE);
+		} catch (AuthorizationException e) {
+			logger.error("Authorization error while trying to terminate job " + nativeJobId  + ".", e);
+			throw new PermissionDeniedException(e);
+		} catch (DrmaaException e) {
+			logger.error("Error while trying to terminate job " + nativeJobId  + ".", e);
+			throw new NoSuccessException(e);
+		}
 	}
 
 	public JobMonitorAdaptor getDefaultJobMonitor() {
@@ -49,7 +60,7 @@ public class DRMAAJobControl extends DRMAAAdaptorAbstract implements JobControlA
 	        try {
 	        	rslTree = RSLParser.parse(jobDesc);
 	        } catch (ParseException e) {
-	        	logger.error("Error while parsin rsl job description: " + jobDesc  + ".", e);
+	        	logger.error("Error while parsing rsl job description: " + jobDesc  + ".", e);
 	            throw new NoSuccessException(e);
 	        }
 			
@@ -118,10 +129,15 @@ public class DRMAAJobControl extends DRMAAAdaptorAbstract implements JobControlA
 			
 			// Running job
 			String id = session.runJob(jt);
-			
 			logger.debug("Job " + uniqId + " successfully submitted with ID: " + id);
 			return id;
-		} 
+		} catch (IllegalArgumentException e) {
+			logger.error("Illegal argument error while submitting job.", e);
+			throw new BadResource(e);
+		} catch (AuthorizationException e) {
+			logger.error("Authorization error while submitting job.", e);
+			throw new PermissionDeniedException(e);
+		}
 		catch (DrmaaException e) {
 			logger.error("Error while submitting job.", e);
 			throw new NoSuccessException(e);

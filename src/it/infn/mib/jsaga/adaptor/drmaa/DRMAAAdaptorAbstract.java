@@ -4,7 +4,11 @@ import java.io.File;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.ggf.drmaa.AlreadyActiveSessionException;
+import org.ggf.drmaa.AuthorizationException;
+import org.ggf.drmaa.DefaultContactStringException;
 import org.ggf.drmaa.DrmaaException;
+import org.ggf.drmaa.NoDefaultContactStringSelectedException;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 import org.ogf.saga.error.AuthenticationFailedException;
@@ -35,6 +39,7 @@ public abstract class DRMAAAdaptorAbstract implements ClientAdaptor {
 
 	@SuppressWarnings("rawtypes")
 	public Class[] getSupportedSecurityCredentialClasses() {
+		// TODO: review implementation
 		return new Class[] { UserPassSecurityCredential.class, UserPassStoreSecurityCredential.class, SSHSecurityCredential.class };
 	}
 
@@ -47,15 +52,17 @@ public abstract class DRMAAAdaptorAbstract implements ClientAdaptor {
 	}
 
 	public String getType() {
-		return "drmaa";
+		return "DRMAA";
 	}
 
 	public Usage getUsage() {
+		// TODO: review implementation
 		return new UAnd(new Usage[] { new UOptional(KNOWN_HOSTS), new UOptional(COMPRESSION_LEVEL) });
 	}
 
 	@SuppressWarnings("rawtypes")
 	public Default[] getDefaults(Map map) throws IncorrectStateException {
+		// TODO: review implementation
 		return new Default[] {
 				new Default(KNOWN_HOSTS, new File[] {
 						new File(System.getProperty("user.home") + "/.ssh/known_hosts") }) };
@@ -66,9 +73,27 @@ public abstract class DRMAAAdaptorAbstract implements ClientAdaptor {
 			throws NotImplementedException, AuthenticationFailedException, AuthorizationFailedException,
 			BadParameterException, TimeoutException, NoSuccessException {
 		
+		logger.debug("Initializing a new session.");
+		
 		try {
 			SessionFactory factory = SessionFactory.getFactory();
 			this.session = factory.getSession();
+			session.init(null);
+		}
+		catch (AlreadyActiveSessionException e) {
+			logger.debug("Trying to activated an already active session.", e);
+		}
+		catch (AuthorizationException e) {
+			logger.debug("Authorization exception during connect method.", e);
+			throw new AuthorizationFailedException(e);
+		}
+		catch(DefaultContactStringException e) {
+			logger.debug("Parameters exception during connect method.", e);
+			throw new BadParameterException(e);
+		}
+		catch(NoDefaultContactStringSelectedException e) {
+			logger.debug("Parameters exception during connect method.", e);
+			throw new BadParameterException(e);
 		}
 		catch (Exception e) {
 			logger.debug("Exception during connect method.", e);
@@ -77,6 +102,8 @@ public abstract class DRMAAAdaptorAbstract implements ClientAdaptor {
 	}
 
 	public void disconnect() throws NoSuccessException {
+		logger.debug("Disconnecting session.");
+		
 		try {
 			if (this.session != null) this.session.exit();
 		}
