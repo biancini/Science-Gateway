@@ -2,6 +2,9 @@ package integration;
 
 import junit.framework.Test;
 
+import org.ogf.saga.context.ContextDestroyTest;
+import org.ogf.saga.context.ContextInfoTest;
+import org.ogf.saga.context.ContextInitTest;
 import org.ogf.saga.job.JobDescriptionTest;
 import org.ogf.saga.job.JobListTest;
 import org.ogf.saga.job.JobRunDescriptionTest;
@@ -18,7 +21,20 @@ public class DRMAATestSuite extends JSAGATestSuite {
     public static Test suite() throws Exception { return new DRMAATestSuite(); }
     /** index of test cases */
     public static class index extends IndexTest { public index(){ super(DRMAATestSuite.class); } }
+    
+    /** Security adaptor **/
+    /** test cases */
+    public static class DRMAA_ContextInit extends ContextInitTest {
+        public DRMAA_ContextInit() throws Exception { super("DRMAA"); }
+    }
+    public static class DRMAA_ContextInfo extends ContextInfoTest {
+        public DRMAA_ContextInfo() throws Exception { super(); }
+    }
+    public static class DRMAA_ContextDestroy extends ContextDestroyTest {
+        public DRMAA_ContextDestroy() throws Exception { super("DRMAA"); }
+    }
 
+    /** Job adaptor **/
     /** test cases */
     public static class DRMAA_JobRunWithPrequisiteTest extends JobRunWithPrequisiteTest {
         public DRMAA_JobRunWithPrequisiteTest() throws Exception { super("DRMAA"); }
