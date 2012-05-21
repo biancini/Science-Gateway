@@ -1,28 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>fr.in2p3.jsaga.adaptor</groupId>
         <artifactId>adaptors</artifactId>
-        <version>0.9.15-SNAPSHOT</version>
+        <version>0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.in2p3.jsaga.adaptor</groupId>
-    <artifactId>jsaga-adaptor-gos</artifactId>
-    <version>0.9.15-SNAPSHOT</version>
-    <name>jsaga-adaptor-gos</name>
-    <description>CHANGEME: Write a short description of plug-ins provided by this module.</description>
+    <artifactId>jsaga-adaptor-drmaa</artifactId>
+    <version>0.1</version>
+    <name>jsaga-adaptor-drmaa</name>
+    <description>This adaptor implements an integration with DRMAA Gridway grid engines.</description>
     <developers>
         <developer>
-            <name>CHANGEME</name>
-            <email>CHANGEME</email>
-            <organization>CHANGEME</organization>
-            <organizationUrl>CHANGEME</organizationUrl>
+            <name>Andrea Biancini</name>
+            <email>andrea.biancini@mib.infn.it</email>
+            <organization>INFN Milano Bicocca</organization>
+            <organizationUrl>https://www.mib.infn.it/</organizationUrl>
             <properties>
-                <organizationLogoUrl>CHANGEME</organizationLogoUrl>
-                <project>CHANGEME</project>
-                <projectUrl>CHANGEME</projectUrl>
-                <projectLogoUrl>CHANGEME</projectLogoUrl>
+                <organizationLogoUrl>https://www.mib.infn.it/main/media/stuff/logoinfnt.gif</organizationLogoUrl>
+                <project>CHAIN</project>
+                <projectUrl>http://www.chain-project.eu</projectUrl>
+                <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
+            </properties>
+        </developer>
+        <developer>
+            <name>Antonio Budano</name>
+            <email>antonio.budano@roma3.infn.it</email>
+            <organization>INFN Roma 3</organization>
+            <organizationUrl>http://www.roma3.infn.it/</organizationUrl>
+            <properties>
+                <organizationLogoUrl>https://www.roma3.infn.it/horde/themes/graphics/horde-power1.png</organizationLogoUrl>
+                <project>CHAIN</project>
+                <projectUrl>http://www.chain-project.eu</projectUrl>
+                <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
+            </properties>
+        </developer>
+        <developer>
+            <name>Marco Verlato</name>
+            <email>marco.verlato@pd.infn.it</email>
+            <organization>INFN Padova</organization>
+            <organizationUrl>http://www.pd.infn.it/</organizationUrl>
+            <properties>
+                <organizationLogoUrl>http://www.pd.infn.it/img/logo0.gif</organizationLogoUrl>
+                <project>CHAIN</project>
+                <projectUrl>http://www.chain-project.eu</projectUrl>
+                <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
             </properties>
         </developer>
     </developers>

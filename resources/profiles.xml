@@ -6,7 +6,7 @@
             <id>build-adaptor-only</id>
             <activation>
                 <file>
-                    <missing>../pom.xml</missing>
+                    <missing>pom.xml</missing>
                 </file>
             </activation>
             <repositories>
