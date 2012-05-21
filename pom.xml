@@ -1,16 +1,79 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>fr.in2p3.jsaga.adaptor</groupId>
-        <artifactId>adaptors</artifactId>
-        <version>0.1</version>
-    </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.in2p3.jsaga.adaptor</groupId>
     <artifactId>jsaga-adaptor-drmaa</artifactId>
     <version>0.1</version>
     <name>jsaga-adaptor-drmaa</name>
     <description>This adaptor implements an integration with DRMAA Gridway grid engines.</description>
+    <dependencies>
+      <dependency>
+        <groupId>org.ogf.saga</groupId>
+        <artifactId>saga-api</artifactId>
+        <version>1.1.1</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>fr.in2p3.jsaga</groupId>
+        <artifactId>jsaga-engine</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <artifactId>jsaga-adaptor-classic</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <artifactId>jsaga-adaptoritf</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.16</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>fr.in2p3.jsaga</groupId>
+        <artifactId>jsaga-engine</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.ggf.drmaa</groupId>
+        <artifactId>drmaa</artifactId>
+        <version>1.0</version>
+        <scope>runtime</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.ogf.saga</groupId>
+        <artifactId>saga-api-test</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.2</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.globus</groupId>
+        <artifactId>cog-jglobus</artifactId>
+        <version>4.0.8</version>
+        <scope>runtime</scope>
+      </dependency>
+    </dependencies>
     <developers>
         <developer>
             <name>Andrea Biancini</name>
@@ -50,17 +113,17 @@
         </developer>
     </developers>
     <build>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>test/src</testSourceDirectory>
-        <resources>
-            <resource>
-                <directory>resources</directory>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>test/resources</directory>
-            </testResource>
-        </testResources>
+      <sourceDirectory>src</sourceDirectory>
+      <testSourceDirectory>test/src</testSourceDirectory>
+      <resources>
+        <resource>
+          <directory>resources</directory>
+        </resource>
+      </resources>
+      <testResources>
+        <testResource>
+          <directory>test/resources</directory>
+        </testResource>
+      </testResources>
     </build>
 </project>
