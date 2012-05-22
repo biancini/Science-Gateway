@@ -1,17 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>fr.in2p3.jsaga.adaptor</groupId>
+    <groupId>fr.in2p3.jsaga.adaptor.drmaa</groupId>
     <artifactId>jsaga-adaptor-drmaa</artifactId>
     <version>0.1</version>
     <name>jsaga-adaptor-drmaa</name>
     <description>This adaptor implements an integration with DRMAA Gridway grid engines.</description>
+    <parent>
+        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <artifactId>adaptors</artifactId>
+        <version>0.9.15-SNAPSHOT</version>
+    </parent>
+    <repositories>
+        <repository>
+            <id>in2p3-maven2-repository-libraries</id>
+            <url>http://grid.in2p3.fr/maven2/</url>
+        </repository>
+        <repository>
+            <id>cctoolsafs-maven2-repository-plugins</id>
+            <url>http://cctoolsafs.in2p3.fr/maven2/</url>
+        </repository>
+        <repository>
+        	<id>cogkit-maven-repository</id>
+            <url>http://www.cogkit.org/maven/repository/</url>
+        </repository>
+        <repository>
+        	<id>apache-maven-repository</id>
+            <url>http://mvnrepository.com/artifact/</url>
+        </repository>
+    </repositories>
     <dependencies>
       <dependency>
         <groupId>org.ogf.saga</groupId>
         <artifactId>saga-api</artifactId>
-        <version>1.1.1</version>
         <scope>compile</scope>
+        <version>1.1.1</version>
       </dependency>
       <dependency>
         <groupId>fr.in2p3.jsaga</groupId>
@@ -22,57 +45,61 @@
       <dependency>
         <groupId>fr.in2p3.jsaga.adaptor</groupId>
         <artifactId>jsaga-adaptor-classic</artifactId>
-        <version>0.9.15-SNAPSHOT</version>
         <scope>runtime</scope>
+        <version>0.9.15-SNAPSHOT</version>
       </dependency>
       <dependency>
-        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <groupId>fr.in2p3.jsaga</groupId>
         <artifactId>jsaga-adaptoritf</artifactId>
+        <scope>runtime</scope>
         <version>0.9.15-SNAPSHOT</version>
-        <scope>runtime</scope>
       </dependency>
       <dependency>
-        <groupId>fr.in2p3.jsaga.adaptor</groupId>
+        <groupId>commons-logging</groupId>
         <artifactId>commons-logging</artifactId>
-        <version>1.1</version>
         <scope>runtime</scope>
+        <version>1.1.1</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.log4j</groupId>
+        <groupId>log4j</groupId>
         <artifactId>log4j</artifactId>
-        <version>1.2.16</version>
         <scope>runtime</scope>
+        <version>1.2.16</version>
       </dependency>
       <dependency>
         <groupId>fr.in2p3.jsaga</groupId>
         <artifactId>jsaga-engine</artifactId>
+        <scope>runtime</scope>
         <version>0.9.15-SNAPSHOT</version>
-        <scope>runtime</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.ggf.drmaa</groupId>
-        <artifactId>drmaa</artifactId>
-        <version>1.0</version>
-        <scope>runtime</scope>
       </dependency>
       <dependency>
         <groupId>org.ogf.saga</groupId>
         <artifactId>saga-api-test</artifactId>
+        <scope>test</scope>
         <version>0.9.15-SNAPSHOT</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.apache.junit</groupId>
+        <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>3.8.2</version>
         <scope>test</scope>
+        <version>4.10</version>
       </dependency>
       <dependency>
-        <groupId>org.globus</groupId>
-        <artifactId>cog-jglobus</artifactId>
-        <version>4.0.8</version>
-        <scope>runtime</scope>
-      </dependency>
+       <groupId>org.cogkit</groupId>
+       <artifactId>util</artifactId>
+       <version>5.0-SNAPSHOT</version>        
+     </dependency>
+     <dependency>
+       <groupId>org.jglobus</groupId>
+       <artifactId>JGlobus-GRAM</artifactId>
+       <version>2.0.0</version>
+     </dependency>
+     <dependency>
+       <groupId>org.drmaa</groupId>
+       <artifactId>drmaa</artifactId>
+       <scope>system</scope>
+       <systemPath>${project.basedir}/lib/drmaa.jar</systemPath>
+    </dependency>
     </dependencies>
     <developers>
         <developer>
@@ -88,12 +115,36 @@
             </properties>
         </developer>
         <developer>
+            <name>Diego Scardaci</name>
+            <email>diego.scardaci@ct.infn.it</email>
+            <organization>INFN Catania</organization>
+            <organizationUrl>http://www.ct.infn.it/</organizationUrl>
+            <properties>
+                <organizationLogoUrl>https://www.mib.infn.it/main/media/stuff/logoinfnt.gif</organizationLogoUrl>
+                <project>CHAIN</project>
+                <projectUrl>http://www.chain-project.eu</projectUrl>
+                <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
+            </properties>
+        </developer>
+        <developer>
+            <name>Giuseppe Andronico</name>
+            <email>giuseppe.andronico@ct.infn.it</email>
+            <organization>INFN Catania</organization>
+            <organizationUrl>http://www.ct.infn.it/</organizationUrl>
+            <properties>
+                <organizationLogoUrl>https://www.mib.infn.it/main/media/stuff/logoinfnt.gif</organizationLogoUrl>
+                <project>CHAIN</project>
+                <projectUrl>http://www.chain-project.eu</projectUrl>
+                <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
+            </properties>
+        </developer>
+        <developer>
             <name>Antonio Budano</name>
             <email>antonio.budano@roma3.infn.it</email>
             <organization>INFN Roma 3</organization>
             <organizationUrl>http://www.roma3.infn.it/</organizationUrl>
             <properties>
-                <organizationLogoUrl>https://www.roma3.infn.it/horde/themes/graphics/horde-power1.png</organizationLogoUrl>
+                <organizationLogoUrl>https://www.mib.infn.it/main/media/stuff/logoinfnt.gif</organizationLogoUrl>
                 <project>CHAIN</project>
                 <projectUrl>http://www.chain-project.eu</projectUrl>
                 <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
@@ -105,7 +156,7 @@
             <organization>INFN Padova</organization>
             <organizationUrl>http://www.pd.infn.it/</organizationUrl>
             <properties>
-                <organizationLogoUrl>http://www.pd.infn.it/img/logo0.gif</organizationLogoUrl>
+                <organizationLogoUrl>https://www.mib.infn.it/main/media/stuff/logoinfnt.gif</organizationLogoUrl>
                 <project>CHAIN</project>
                 <projectUrl>http://www.chain-project.eu</projectUrl>
                 <projectLogoUrl>http://www.chain-project.eu/documents/15867/33937/chain_logo.png</projectLogoUrl>
@@ -126,4 +177,17 @@
         </testResource>
       </testResources>
     </build>
+    <organization>
+    	<name>INFN</name>
+    	<url>http://www.infn.it</url>
+    </organization>
+    <dependencyManagement>
+    	<dependencies>
+    		<dependency>
+    			<groupId>org.drmaa</groupId>
+    			<artifactId>drmaa</artifactId>
+    			<version>1.0</version>
+    		</dependency>
+    	</dependencies>
+    </dependencyManagement>
 </project>

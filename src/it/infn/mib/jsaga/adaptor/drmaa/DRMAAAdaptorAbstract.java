@@ -1,7 +1,9 @@
 package it.infn.mib.jsaga.adaptor.drmaa;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ggf.drmaa.AlreadyActiveSessionException;
@@ -36,6 +38,21 @@ public abstract class DRMAAAdaptorAbstract implements ClientAdaptor {
 	protected static final String KNOWN_HOSTS = "KnownHosts";
 	protected SecurityCredential credential = null;
 	protected Session session = null;
+	
+	public DRMAAAdaptorAbstract() {
+		try {
+			Properties properties = new Properties();
+			properties.load(getClass().getResourceAsStream("drmaa.properties"));
+			System.setProperty("java.library.path", properties.getProperty("drmaa_library_path"));
+			 
+			Field fieldSysPath = ClassLoader.class.getDeclaredField("sys_paths");
+			fieldSysPath.setAccessible(true);
+			fieldSysPath.set(null, null);
+		}
+		catch (Exception e) {
+			logger.error("The adaptor was not able to link Gridway libraries. Probable misfunctions during execution.", e);
+		}
+	}
 
 	@SuppressWarnings("rawtypes")
 	public Class[] getSupportedSecurityCredentialClasses() {

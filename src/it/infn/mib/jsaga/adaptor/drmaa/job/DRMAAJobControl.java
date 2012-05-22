@@ -29,7 +29,7 @@ public class DRMAAJobControl extends DRMAAAdaptorAbstract implements JobControlA
 	
 	public void cancel(String nativeJobId) throws PermissionDeniedException, TimeoutException, NoSuccessException {
 		logger.debug("Trying to cancel job with id " + nativeJobId + ".");
-		try {			
+		try {
 			getSession().control(nativeJobId, Session.TERMINATE);
 		} catch (AuthorizationException e) {
 			logger.error("Authorization error while trying to terminate job " + nativeJobId  + ".", e);

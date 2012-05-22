@@ -8,6 +8,7 @@
         <fileSet>
             <useDefaultExcludes>true</useDefaultExcludes>
             <excludes>
+            	<exclude>README.md</exclude>
                 <exclude>build/**</exclude>
                 <exclude>.gitignore</exclude>
                 <exclude>*.iml</exclude>
