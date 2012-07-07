@@ -1,23 +1,11 @@
-JSAGA_DRMAA
-===========
+Science Gateway
+===============
+This project contains applicatons developed in the context of the CHAIN european project.
 
-Implementation of a JSAGA Adaptor for DRMAA.
-Copyright, 2012-2012, Istituto Nazionale Fisica Nucleare (INFN)
+It consists of two different development areas:
+  * A portlet for the Science Gateway on Liferay that permits to interface a Grid application
+  * A JSAGA DRMAA adaptor to interact with GARUDA network
 
-
-About
------
-
-This JSAGA Adaptor permits to exploit the DRMAA implementation packaged with GridWay to submit
-jobs to grids environments. The current implementation complies with the  DRMAA specification
-version 1.0.
- 
-The idea is to access GridWay through a SAGA adaptor to DRMAA (SAGA->DRMAA->GridWay).
-This piece of code is part of the EU funded Chain project:
-
-  [http://www.chain-project.eu/]
-  
-  
 Chain Project
 -------------
 
@@ -39,6 +27,46 @@ Finally, the project will act as a worldwide policy-watch and coordination instr
 and proposing concrete steps for the coordination with other initiatives and studying the evolution
 of e-Infrastructures.
 
+
+Portlet
+-------
+
+By definition, a Science Gateway is a community-developed set of tools, applications, and data that is
+integrated via a portal or a suite of applications, usually in a graphical user interface, that is further
+customized to meet the needs of a specific community.
+
+The GILDA framework for Science Gateways is fully web-based and adopts official worldwide standards and protocols,
+through their most common implementations. These are:
+
+  * The JSR 168 and JSR 286 standards (also known as "portlet 1.0" and "portlet 2.0" standards);
+  * The OASIS Security Assertion Markup Language (SAML) standard and its Shibboleth and SimpleSAMLphp implementations;
+  * The Lightweight Direct Access Protocol, and its OpenLDAP implementation;
+  * The Cryptographic Token Interface Standard (PKCS#11) standard and its Cryptoki implementation;
+  * The Open Grid Forum (OGF) Simple API for Grid Applications (SAGA) standard and its JSAGA implementation.
+
+The GILDA Science Gateways are built using the Liferay portal framework.
+  [http://www.liferay.com/]
+
+
+JSAGA DRMAA
+-----------
+Implementation of a JSAGA Adaptor for DRMAA.
+Copyright, 2012-2012, Istituto Nazionale Fisica Nucleare (INFN)
+
+
+About
+-----
+
+This JSAGA Adaptor permits to exploit the DRMAA implementation packaged with GridWay to submit
+jobs to grids environments. The current implementation complies with the  DRMAA specification
+version 1.0.
+ 
+The idea is to access GridWay through a SAGA adaptor to DRMAA (SAGA->DRMAA->GridWay).
+This piece of code is part of the EU funded Chain project:
+
+  [http://www.chain-project.eu/]
+  
+  
 
 Gridway
 -------
