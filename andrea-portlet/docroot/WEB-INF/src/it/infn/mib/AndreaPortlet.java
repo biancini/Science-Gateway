@@ -710,8 +710,8 @@ public class AndreaPortlet extends GenericPortlet {
         
         // Send preference values
 		request.setAttribute("pref_logLevel", appPreferences.getLogLevel());
-		request.setAttribute("pref_numInfrastructures", appPreferences.getNumInfrastructures());
-		request.setAttribute("pref_currInfrastructure", appPreferences.getCurrPaneInfrastructure());
+		request.setAttribute("pref_numInfrastructures", Integer.toString(appPreferences.getNumInfrastructures()));
+		request.setAttribute("pref_currInfrastructure", Integer.toString(appPreferences.getCurrPaneInfrastructure()));
 		request.setAttribute("pref_gridOperationId", appPreferences.getGridOperationId());
 		request.setAttribute("pref_gridOperationDesc", appPreferences.getGridOperationDesc());
         // Send Infrastructure specific data        
@@ -754,7 +754,7 @@ public class AndreaPortlet extends GenericPortlet {
     public void doHelp(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         _log.info("Calling doHelp ...");
         response.setContentType("text/html");
-        request.setAttribute("portletVersion",appPreferences.getPortletVersion()); 
+        request.setAttribute("portletVersion", appPreferences.getPortletVersion()); 
         PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher("/help.jsp");
         dispatcher.include(request, response);
     } // doHelp
