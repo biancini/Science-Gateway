@@ -20,7 +20,7 @@ limitations under the License.
 
 @author <a href="mailto:riccardo.bruno@ct.infn.it">Riccardo Bruno</a>(COMETA)
 ****************************************************************************/
-package it.infn.ct;
+package it.infn.mib;
 
 // Importing GridEngine Job libraries 
 import it.infn.ct.GridEngine.Job.InfrastructureInfo;
@@ -732,7 +732,9 @@ public class AppInfrastructureInfo {
      * 
      * @see AppInfrastructureInfo
      */
-    public void updateInfrastructureValue (String prefItem, String prefValue) {
+    public void updateInfrastructureValue(String prefItem, String prefValue) {
+    	if (prefItem == null || prefValue == null) return;
+    	
         switch(Items.valueOf(prefItem)) {
             case enableInfrastructure:
                 if (!prefValue.equals("") && !enableInfrastructure.equals(prefValue)) enableInfrastructure = prefValue;

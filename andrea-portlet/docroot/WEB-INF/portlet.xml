@@ -8,43 +8,40 @@
 >
 	<portlet>
 		<portlet-name>andrea-portlet</portlet-name>
-		<display-name>andrea-portlet</display-name>
-		<portlet-class>it.infn.ct.andrea_portlet</portlet-class>
-		<!--
-                     Application init parameters
-                -->
-                <init-param>
+		<display-name>Portlet by Andrea</display-name>
+		<portlet-class>it.infn.mib.AndreaPortlet</portlet-class>
+		<!-- Application init parameters -->
+        <init-param>
         		<name>gridOperationDesc</name>
-        		<value>andrea description</value>
+        		<value>Andrea description</value>
 		</init-param>
 		<init-param>
-                        <name>portletVersion</name>
-                        <value>1.0</value>
-                </init-param>
-                <init-param>
-                        <name>logLevel</name>
-                        <value>info</value>
-                </init-param>
+                <name>portletVersion</name>
+                <value>1.0</value>
+        </init-param>
+        <init-param>
+                <name>logLevel</name>
+                <value>info</value>
+        </init-param>
 		<init-param>
-                        <name>gridOperationId</name>
-                        <value></value>
-                </init-param>
-                <!--
-                     Infrastructure parameters can be specified prefixing
-                     the name with the infrastructure number: n_<property>
-                -->
-                <init-param>
-                        <name>numInfrastructures</name>
-                        <value>3</value>
-                </init-param>
-                <!--
-                     Infrastructure #1
-                -->
-
-         	<init-param>
-            		<name>1_nameInfrastructure</name>
-            		<value>EUMEDGRID-Support infrastructure</value>
-         	</init-param>
+                <name>gridOperationId</name>
+                <value></value>
+        </init-param>
+        <!--
+             Infrastructure parameters can be specified prefixing
+             the name with the infrastructure number: n_<property>
+        -->
+        <init-param>
+                <name>numInfrastructures</name>
+                <value>3</value>
+        </init-param>
+        <!--
+             Infrastructure #1
+        -->
+       	<init-param>
+          		<name>1_nameInfrastructure</name>
+          		<value>EUMEDGRID-Support infrastructure</value>
+       	</init-param>
 		<init-param>             
 			<name>1_acronymInfrastructure</name>
 			<value>EUMEDGRID</value>
@@ -93,14 +90,13 @@
             <name>1_softwareTags</name>
             <value></value>
         </init-param>		
-                <!--
-                     Infrastructure #2
-                -->
-
-         	<init-param>
-            		<name>2_nameInfrastructure</name>
-            		<value>GridIt Italian Grid Infrastructure</value>
-         	</init-param>
+        <!--
+             Infrastructure #2
+        -->
+    	<init-param>
+       		<name>2_nameInfrastructure</name>
+       		<value>GridIt Italian Grid Infrastructure</value>
+    	</init-param>
 		<init-param>             
 			<name>2_acronymInfrastructure</name>
 			<value>GridIt</value>
@@ -109,10 +105,10 @@
 			<name>2_bdiiHost</name>
 			<value>ldap://egee-bdii.cnaf.infn.it:2170</value>
 		</init-param>
-        	<init-param>
-            		<name>2_enableInfrastructure</name>
-            		<value>yes</value>
-        	</init-param>
+      	<init-param>
+          		<name>2_enableInfrastructure</name>
+          		<value>yes</value>
+      	</init-param>
 		<init-param>    
 			<name>2_wmsHosts</name>
 			<value>wms://wms014.cnaf.infn.it:7443/glite_wms_wmproxy_server</value>
@@ -149,14 +145,13 @@
             <name>2_softwareTags</name>
             <value></value>
         </init-param>		
-                <!--
-                     Infrastructure #3
-                -->
-
-         	<init-param>
-            		<name>3_nameInfrastructure</name>
-            		<value>GISELA Latin American Infrastructure</value>
-         	</init-param>
+        <!--
+             Infrastructure #3
+        -->
+      	<init-param>
+         		<name>3_nameInfrastructure</name>
+         		<value>GISELA Latin American Infrastructure</value>
+      	</init-param>
 		<init-param>             
 			<name>3_acronymInfrastructure</name>
 			<value>GISELA</value>
@@ -165,10 +160,10 @@
 			<name>3_bdiiHost</name>
 			<value>ldap://bdii.eela.ufrj.br:2170</value>
 		</init-param>
-        	<init-param>
-            		<name>3_enableInfrastructure</name>
-            		<value>yes</value>
-        	</init-param>
+      	<init-param>
+          		<name>3_enableInfrastructure</name>
+          		<value>yes</value>
+      	</init-param>
 		<init-param>    
 			<name>3_wmsHosts</name>
 			<value>wms://wms.eela.ufrj.br:7443/glite_wms_wmproxy_server</value>
@@ -237,7 +232,7 @@
 			<portlet-mode>help</portlet-mode>
 		</supports>
 		<portlet-info>
-			<title>andrea-portlet</title>
+			<title>Portlet by Andrea</title>
 			<short-title>andrea-portlet</short-title>
 			<keywords>andrea-portlet</keywords>
 		</portlet-info>

@@ -20,7 +20,7 @@ limitations under the License.
 
 @author <a href="mailto:riccardo.bruno@ct.infn.it">Riccardo Bruno</a>(COMETA)
 ****************************************************************************/
-package it.infn.ct;
+package it.infn.mib;
 
 // AppLogger class (No customizations needed)
 
