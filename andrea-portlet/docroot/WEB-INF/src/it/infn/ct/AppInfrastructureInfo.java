@@ -23,10 +23,7 @@ limitations under the License.
 package it.infn.ct;
 
 // Importing GridEngine Job libraries 
-import it.infn.ct.GridEngine.Job.*;
 import it.infn.ct.GridEngine.Job.InfrastructureInfo;
-import it.infn.ct.GridEngine.UsersTracking.UsersTrackingDBInterface;
-import it.infn.ct.GridEngine.Job.MultiInfrastructureJobSubmission;
 
 /**
  * Infrastructure information class stores the required information
@@ -50,42 +47,42 @@ class AppInfrastructureInfo {
     static final String LS = System.getProperty("line.separator");     
         
     // AppInfrastructureInfo default values
-    public static final String DEF_enableInfrastructure ="yes/no";
-    public static final String DEF_nameInfrastructure   ="Infrastructure name";
-    public static final String DEF_acronymInfrastructure="Infrastructure acronym";     
-    public static final String DEF_bdiiHost             ="BDII host";
-    public static final String DEF_wmsHosts             ="WMS host";
-    public static final String DEF_pxServerHost         ="Robot proxy server host";
-    public static final String DEF_pxServerPort         ="Robot proxy server port";
-    public static final String DEF_pxServerSecure       ="Robot proxy server secure flag";
-    public static final String DEF_pxRobotId            ="Robot proxy id";
-    public static final String DEF_pxRobotVO            ="Robot proxy VO"; 
-    public static final String DEF_pxRobotRole          ="Robot proxy Role";
-    public static final String DEF_pxRobotRenewalFlag   ="Robot proxy renewal flag";
-    public static final String DEF_pxUserProxy          ="User proxy";
-    public static final String DEF_softwareTags         ="Software tags";                       
+    public static final String DEF_enableInfrastructure = "yes/no";
+    public static final String DEF_nameInfrastructure = "Infrastructure name";
+    public static final String DEF_acronymInfrastructure = "Infrastructure acronym";     
+    public static final String DEF_bdiiHost = "BDII host";
+    public static final String DEF_wmsHosts = "WMS host";
+    public static final String DEF_pxServerHost = "Robot proxy server host";
+    public static final String DEF_pxServerPort = "Robot proxy server port";
+    public static final String DEF_pxServerSecure = "Robot proxy server secure flag";
+    public static final String DEF_pxRobotId = "Robot proxy id";
+    public static final String DEF_pxRobotVO = "Robot proxy VO"; 
+    public static final String DEF_pxRobotRole = "Robot proxy Role";
+    public static final String DEF_pxRobotRenewalFlag = "Robot proxy renewal flag";
+    public static final String DEF_pxUserProxy = "User proxy";
+    public static final String DEF_softwareTags = "Software tags";                       
     
     // GridEngine' InfrastructureInfo
     // This class owns its values and aligns them 
     // with the GridEngine class
-    private InfrastructureInfo infrastructureInfo=null;
+    private InfrastructureInfo infrastructureInfo = null;
     
     // Extension values
     // The portlet code uses the following values
-    private String enableInfrastructure;    // Flag that enables/disable the infrastructure   
-    private String nameInfrastructure;      // Complete name of the infrastructure
-    private String acronymInfrastructure;   // Infrastructure Acronym (short name)
-    private String bdiiHost;                // topBDII host name
-    private String wmsHosts;                // ';' separated list of enabled WMSes
-    private String pxServerHost;            // eTokenServer hostname
-    private String pxServerPort;            // eTokenServer port number
-    private String pxServerSecure;          // eTokenServer secure connection flag
-    private String pxRobotId;               // Robot proxy identifier
-    private String pxRobotVO;               // Robot proxy VO
-    private String pxRobotRole;             // Robot proxy role
-    private String pxRobotRenewalFlag;      // Robot proxy renewal flag
-    private String pxUserProxy;             // Holds a path to an User Proxy (test jobSubmissions)
-    private String softwareTags;            // ';' separated list of software tags    
+    private String enableInfrastructure = null; // Flag that enables/disable the infrastructure 
+	private String nameInfrastructure = null; // Complete name of the infrastructure
+	private String acronymInfrastructure = null; // Infrastructure Acronym (short name)
+	private String bdiiHost = null; // topBDII host name
+	private String wmsHosts = null; // ';' separated list of enabled WMSes
+	private String pxServerHost = null; // eTokenServer hostname
+	private String pxServerPort = null; // eTokenServer port number
+	private String pxServerSecure = null; // eTokenServer secure connection flag
+	private String pxRobotId = null; // Robot proxy identifier
+	private String pxRobotVO = null; // Robot proxy VO
+	private String pxRobotRole = null; // Robot proxy role
+	private String pxRobotRenewalFlag = null; // Robot proxy renewal flag
+	private String pxUserProxy = null; // Holds a path to an User Proxy (test jobSubmissions)
+	private String softwareTags = null; // ';' separated list of software tags 
     
     /**
      * Standard constructor
@@ -94,23 +91,21 @@ class AppInfrastructureInfo {
      * 
      * @see it.infn.ct.GridEngine.Job.InfrastructureInfo
      */
-    AppInfrastructureInfo() {
-        // Initialize  AppInfrastructureInfo 
-         enableInfrastructure
-        =nameInfrastructure
-        =acronymInfrastructure
-        =bdiiHost
-        =wmsHosts
-        =pxServerHost
-        =pxServerPort
-        =pxServerSecure
-        =pxRobotId
-        =pxRobotVO
-        =pxRobotRole
-        =pxRobotRenewalFlag        
-        =pxUserProxy
-        =softwareTags
-        ="";                  
+	AppInfrastructureInfo() {
+		enableInfrastructure = "";
+        nameInfrastructure = "";
+        acronymInfrastructure = "";
+        bdiiHost = "";
+        wmsHosts = "";
+        pxServerHost = "";
+        pxServerPort = "";
+        pxServerSecure = "";
+        pxRobotId = "";
+        pxRobotVO = "";
+        pxRobotRole = "";
+        pxRobotRenewalFlag = "";        
+        pxUserProxy = "";
+        softwareTags = "";   
     } // AppInfrastructureInfo
         
     /**
@@ -127,22 +122,8 @@ class AppInfrastructureInfo {
      * @param vo               The Robot proxy virtual organization
      * @param fqan             The Robot proxy roles
      */
-    AppInfrastructureInfo(String name
-                        , String bdii
-                        , String wmslist[]
-                        , String etokenserver
-                        , String etokenserverport
-                        , String proxyid
-                        , String vo
-                        , String fqan) {
-        infrastructureInfo=new InfrastructureInfo(name
-                                                , bdii
-                                                , wmslist
-                                                , etokenserver
-                                                , etokenserverport
-                                                , proxyid
-                                                , vo
-                                                , fqan);        
+    AppInfrastructureInfo(String name, String bdii, String wmslist[], String etokenserver, String etokenserverport, String proxyid, String vo, String fqan) {
+        infrastructureInfo = new InfrastructureInfo(name, bdii, wmslist, etokenserver, etokenserverport, proxyid, vo, fqan);        
         // Now aligns the AppInfrastructureInfo values
         InfrastructureInfoToAppInfrastructureInfo();
     } // AppInfrastructureInfo
@@ -164,24 +145,8 @@ class AppInfrastructureInfo {
      * 
      * @see it.infn.ct.GridEngine.Job.InfrastructureInfo
      */
-    AppInfrastructureInfo(String name
-                        , String bdii
-                        , String wmslist[]
-                        , String etokenserver
-                        , String etokenserverport
-                        , String proxyid
-                        , String vo
-                        , String fqan
-                        , String swtag) {
-        infrastructureInfo=new InfrastructureInfo(name
-                                                , bdii
-                                                , wmslist
-                                                , etokenserver
-                                                , etokenserverport
-                                                , proxyid
-                                                , vo
-                                                , fqan
-                                                , swtag);        
+    AppInfrastructureInfo(String name, String bdii, String wmslist[], String etokenserver, String etokenserverport, String proxyid, String vo, String fqan, String swtag) {
+        infrastructureInfo = new InfrastructureInfo(name, bdii, wmslist, etokenserver, etokenserverport, proxyid, vo, fqan, swtag);        
         // Now aligns the AppInfrastructureInfo values
         InfrastructureInfoToAppInfrastructureInfo();
     } // AppInfrastructureInfo
@@ -206,35 +171,24 @@ class AppInfrastructureInfo {
      * 
      * @see AppInfrastructureInfo
      */
-    AppInfrastructureInfo(String enableInfrastructure
-                        , String nameInfrastructure
-                        , String acronymInfrastructure
-                        , String bdiiHost
-                        , String wmsHosts
-                        , String pxServerHost
-                        , String pxServerPort
-                        , String pxServerSecure
-                        , String pxRobotId
-                        , String pxRobotVO
-                        , String pxRobotRole
-                        , String pxRobotRenewalFlag
-                        , String pxUserProxy
-                        , String softwareTags
-                        ) {
-        this.enableInfrastructure =enableInfrastructure;
-        this.nameInfrastructure   =nameInfrastructure;
-        this.acronymInfrastructure=acronymInfrastructure;
-        this.bdiiHost             =bdiiHost;
-        this.wmsHosts             =wmsHosts;
-        this.pxServerHost         =pxServerHost;
-        this.pxServerPort         =pxServerPort;
-        this.pxServerSecure       =pxServerSecure;
-        this.pxRobotId            =pxRobotId;
-        this.pxRobotVO            =pxRobotVO;
-        this.pxRobotRole          =pxRobotRole;
-        this.pxRobotRenewalFlag   =pxRobotRenewalFlag;
-        this.pxUserProxy          =pxUserProxy;
-        this.softwareTags         =softwareTags;
+    AppInfrastructureInfo(String enableInfrastructure, String nameInfrastructure, String acronymInfrastructure, String bdiiHost,
+    		String wmsHosts, String pxServerHost, String pxServerPort, String pxServerSecure, String pxRobotId, String pxRobotVO,
+    		String pxRobotRole, String pxRobotRenewalFlag, String pxUserProxy, String softwareTags) {
+    	
+		this.enableInfrastructure = enableInfrastructure;
+		this.nameInfrastructure = nameInfrastructure;
+		this.acronymInfrastructure= acronymInfrastructure;
+		this.bdiiHost = bdiiHost;
+		this.wmsHosts = wmsHosts;
+		this.pxServerHost = pxServerHost;
+		this.pxServerPort = pxServerPort;
+		this.pxServerSecure = pxServerSecure;
+		this.pxRobotId= pxRobotId;
+		this.pxRobotVO= pxRobotVO;
+		this.pxRobotRole= pxRobotRole;
+		this.pxRobotRenewalFlag = pxRobotRenewalFlag;
+		this.pxUserProxy= pxUserProxy;
+		this.softwareTags = softwareTags;
         // Now evaluate the InfrastructureInfo accordingly
         AppInfrastructureInfoToInfrastructureInfo();
     } // AppInfrastructureInfo
@@ -248,21 +202,11 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public AppInfrastructureInfo(AppInfrastructureInfo appInfrastructureInfo) {
-        this( appInfrastructureInfo.enableInfrastructure
-             ,appInfrastructureInfo.nameInfrastructure
-             ,appInfrastructureInfo.acronymInfrastructure
-             ,appInfrastructureInfo.bdiiHost
-             ,appInfrastructureInfo.wmsHosts
-             ,appInfrastructureInfo.pxServerHost
-             ,appInfrastructureInfo.pxServerPort
-             ,appInfrastructureInfo.pxServerSecure
-             ,appInfrastructureInfo.pxRobotId
-             ,appInfrastructureInfo.pxRobotVO
-             ,appInfrastructureInfo.pxRobotRole
-             ,appInfrastructureInfo.pxRobotRenewalFlag
-             ,appInfrastructureInfo.pxUserProxy
-             ,appInfrastructureInfo.softwareTags
-            );
+        this(appInfrastructureInfo.enableInfrastructure, appInfrastructureInfo.nameInfrastructure, appInfrastructureInfo.acronymInfrastructure,
+        		appInfrastructureInfo.bdiiHost, appInfrastructureInfo.wmsHosts, appInfrastructureInfo.pxServerHost,
+        		appInfrastructureInfo.pxServerPort, appInfrastructureInfo.pxServerSecure, appInfrastructureInfo.pxRobotId,
+        		appInfrastructureInfo.pxRobotVO, appInfrastructureInfo.pxRobotRole, appInfrastructureInfo.pxRobotRenewalFlag,
+        		appInfrastructureInfo.pxUserProxy, appInfrastructureInfo.softwareTags);
     }
     
     // 
@@ -273,21 +217,22 @@ class AppInfrastructureInfo {
      * @see it.infn.ct.GridEngine.Job.InfrastructureInfo
      */
     private void InfrastructureInfoToAppInfrastructureInfo() {        
-        enableInfrastructure="yes";    // Enable infrastructure by default
+        enableInfrastructure = "yes";    // Enable infrastructure by default
         if(null != infrastructureInfo) {
-            nameInfrastructure   =infrastructureInfo.getName();        
-            acronymInfrastructure=nameInfrastructure;
-            bdiiHost             =infrastructureInfo.getBDII();
-            String wmsStringList=";";
-            for(int i=0; i<infrastructureInfo.getWmsList().length; i++)
-                wmsStringList+=infrastructureInfo.getWmsList()[i]+";";
-            wmsHosts    =wmsStringList.substring(1,wmsStringList.length()-1);
-            pxServerHost=infrastructureInfo.getETokenServer    ();
-            pxServerPort=infrastructureInfo.getETokenServerPort();
-            pxRobotId   =infrastructureInfo.getProxyId         ();
-            pxRobotVO   =infrastructureInfo.getVO              ();
-            pxRobotRole =infrastructureInfo.getFQAN            ();        
-            softwareTags=infrastructureInfo.getSWTag           ();        
+            nameInfrastructure = infrastructureInfo.getName();        
+            acronymInfrastructure = nameInfrastructure;
+            bdiiHost= infrastructureInfo.getBDII();
+            
+            String wmsStringList = ";";
+            for (int i = 0; i < infrastructureInfo.getWmsList().length; i++) wmsStringList+=infrastructureInfo.getWmsList()[i]+";";
+            
+            wmsHosts = wmsStringList.substring(1,wmsStringList.length()-1);
+            pxServerHost = infrastructureInfo.getETokenServer();
+            pxServerPort = infrastructureInfo.getETokenServerPort();
+            pxRobotId = infrastructureInfo.getProxyId();
+            pxRobotVO = infrastructureInfo.getVO();
+            pxRobotRole = infrastructureInfo.getFQAN();        
+            softwareTags = infrastructureInfo.getSWTag();        
         } // infrastructureInfo not NULL
     } // InfrastructureInfoToAppInfrastructureInfo
     
@@ -306,15 +251,8 @@ class AppInfrastructureInfo {
      */
     private void AppInfrastructureInfoToInfrastructureInfo() {
         // Aligns date from InfrastructureInfo to the AppInfrastructureInfo        
-        infrastructureInfo=new InfrastructureInfo(this.acronymInfrastructure
-                                                , this.bdiiHost
-                                                , this.wmsHosts.split(";")
-                                                , this.pxServerHost
-                                                , this.pxServerPort
-                                                , this.pxRobotId
-                                                , this.pxRobotVO
-                                                , this.pxRobotRole
-                                                , this.softwareTags);
+        infrastructureInfo = new InfrastructureInfo(this.acronymInfrastructure, this.bdiiHost, this.wmsHosts.split(";"), this.pxServerHost, this.pxServerPort,
+        		this.pxRobotId, this.pxRobotVO, this.pxRobotRole, this.softwareTags);
     }
     
     /**
@@ -325,20 +263,19 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public String dump() {
-        String dump=LS+"    enableInfrastructure : '"+enableInfrastructure +"'"
-                   +LS+"    nameInfrastructure   : '"+nameInfrastructure   +"'"
-                   +LS+"    acronymInfrastructure: '"+acronymInfrastructure+"'"
-                   +LS+"    bdiiHost             : '"+bdiiHost             +"'"
-                   +LS+"    wmsHosts             : '"+wmsHosts             +"'"
-                   +LS+"    pxServerHost         : '"+pxServerHost         +"'"
-                   +LS+"    pxServerPort         : '"+pxServerPort         +"'"
-                   +LS+"    pxRobotId            : '"+pxRobotId            +"'"
-                   +LS+"    pxRobotRole          : '"+pxRobotRole          +"'"
-                   +LS+"    pxRobotVO            : '"+pxRobotVO            +"'"                   
-                   +LS+"    pxRobotRenewalFlag   : '"+pxRobotRenewalFlag   +"'"
-                   +LS+"    pxUserProxy          : '"+pxUserProxy          +"'"
-                   +LS+"    softwareTags         : '"+softwareTags         +"'"                   
-                   +LS;
+        String dump = LS + "    enableInfrastructure : '" + enableInfrastructure + "'" + LS +
+        		"    nameInfrastructure   : '" + nameInfrastructure + "'" + LS +
+                "    acronymInfrastructure: '" + acronymInfrastructure + "'" + LS +
+                "    bdiiHost             : '" + bdiiHost + "'" + LS +
+                "    wmsHosts             : '" + wmsHosts + "'" + LS +
+                "    pxServerHost         : '" + pxServerHost + "'" + LS +
+                "    pxServerPort         : '" + pxServerPort + "'" + LS +
+                "    pxRobotId            : '" + pxRobotId + "'" + LS +
+                "    pxRobotRole          : '" + pxRobotRole + "'" + LS +
+                "    pxRobotVO            : '" + pxRobotVO + "'" + LS +            
+                "    pxRobotRenewalFlag   : '" + pxRobotRenewalFlag + "'" + LS +
+                "    pxUserProxy          : '" + pxUserProxy + "'" + LS +
+                "    softwareTags         : '" + softwareTags + "'" + LS;
         return dump;
     }
     
@@ -350,21 +287,21 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */    
     public String htmlDump() {
-        String htmlDump= LS+"<table border=\"1\" cellpadding=\"10\" cellspacing=\"2\">"
-                        +LS+"<tr><td aligh=\"right\"><b>Enable Infrastructure</b></td><td>'" +enableInfrastructure +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Name Infrastructure</b></td><td>'"   +nameInfrastructure   +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Acronym Infrastructure</b></td><td>'"+acronymInfrastructure+"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>BDII Host</b></td><td>'"             +bdiiHost             +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>WMS Hosts</b></td><td>'"             +wmsHosts             +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Robot Server Host</b></td><td>'"     +pxServerHost         +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Robot Server Port</b></td><td>'"     +pxServerPort         +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Robot Id</b></td><td>'"              +pxRobotId            +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Robot Role</b></td><td>'"            +pxRobotRole          +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Robot VO</b></td><td>'"              +pxRobotVO            +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>User Proxy</b></td><td>'"            +pxUserProxy          +"'</td></tr>"
-                        +LS+"<tr><td aligh=\"right\"><b>Software Tags</b></td><td>'"         +softwareTags         +"'</td></tr>"
-                        +LS+"</table>"
-                        +LS;
+        String htmlDump = LS +
+        		        "<table border=\"1\" cellpadding=\"10\" cellspacing=\"2\">" + LS +
+                        "<tr><td aligh=\"right\"><b>Enable Infrastructure</b></td><td>'" + enableInfrastructure + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Name Infrastructure</b></td><td>'" + nameInfrastructure + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Acronym Infrastructure</b></td><td>'"+ acronymInfrastructure + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>BDII Host</b></td><td>'" + bdiiHost + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>WMS Hosts</b></td><td>'" + wmsHosts + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Robot Server Host</b></td><td>'" + pxServerHost + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Robot Server Port</b></td><td>'" + pxServerPort + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Robot Id</b></td><td>'" + pxRobotId + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Robot Role</b></td><td>'" + pxRobotRole + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Robot VO</b></td><td>'" + pxRobotVO + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>User Proxy</b></td><td>'" + pxUserProxy + "'</td></tr>" + LS +
+                        "<tr><td aligh=\"right\"><b>Software Tags</b></td><td>'" + softwareTags + "'</td></tr>" + LS +
+                        "</table>" + LS;
         return htmlDump;
     }
     
@@ -431,7 +368,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setNameInfrastructure(String nameInfrastructure) {
-        this.nameInfrastructure=nameInfrastructure;
+        this.nameInfrastructure = nameInfrastructure;
     }
     
     /**
@@ -479,7 +416,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setBdiiHost(String bdiiHost) {
-        this.bdiiHost=bdiiHost;
+        this.bdiiHost = bdiiHost;
     }
         
     /**
@@ -504,7 +441,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setWmsHosts(String wmsHosts) {
-        this.wmsHosts=wmsHosts;
+        this.wmsHosts = wmsHosts;
     }
     
     
@@ -528,7 +465,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setPxServerHost(String pxServerHost) {
-        this.pxServerHost=pxServerHost;
+        this.pxServerHost = pxServerHost;
     }
     
     /**
@@ -551,8 +488,8 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setPxServerPort(String pxServerPort) {
-        this.pxServerPort=pxServerPort;
-    }
+        this.pxServerPort  =pxServerPort;
+    } 
     
     /**
      * Returns the AppInfrastructureInfo infrastructure Proxy server secure connection flag     
@@ -574,7 +511,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setPxServerSecure(String pxServerSecure) {
-        this.pxServerSecure=pxServerSecure;
+        this.pxServerSecure = pxServerSecure;
     }
     
     /**
@@ -597,7 +534,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setPxRobotId(String pxRobotId) {
-        this.pxRobotId=pxRobotId;
+        this.pxRobotId = pxRobotId;
     }
     
     /**
@@ -620,7 +557,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setPxRobotVO(String pxRobotVO) {
-        this.pxRobotVO=pxRobotVO;
+        this.pxRobotVO = pxRobotVO;
     }
     
     /**
@@ -666,7 +603,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setPxRobotRenewalFlag(String pxRobotRenewalFlag) {
-        this.pxRobotRenewalFlag=pxRobotRenewalFlag;
+        this.pxRobotRenewalFlag = pxRobotRenewalFlag;
     }
     
     /**
@@ -713,7 +650,7 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void setSoftwareTags(String softwareTags) {
-        this.softwareTags=softwareTags;
+        this.softwareTags = softwareTags;
     }
     
     /**
@@ -725,19 +662,19 @@ class AppInfrastructureInfo {
      * @see AppInfrastructureInfo
      */
     public void copy(AppInfrastructureInfo infrastructureInfo) {        
-        this.nameInfrastructure   =infrastructureInfo.nameInfrastructure;    
-        this.acronymInfrastructure=infrastructureInfo.acronymInfrastructure; 
-        this.bdiiHost             =infrastructureInfo.bdiiHost;              
-        this.wmsHosts             =infrastructureInfo.wmsHosts;              
-        this.pxServerHost         =infrastructureInfo.pxServerHost;          
-        this.pxServerPort         =infrastructureInfo.pxServerPort;          
-        this.pxServerSecure       =infrastructureInfo.pxServerSecure;        
-        this.pxRobotId            =infrastructureInfo.pxRobotId;             
-        this.pxRobotVO            =infrastructureInfo.pxRobotVO;             
-        this.pxRobotRole          =infrastructureInfo.pxRobotRole;           
-        this.pxRobotRenewalFlag   =infrastructureInfo.pxRobotRenewalFlag;    
-        this.pxUserProxy          =infrastructureInfo.pxUserProxy;           
-        this.softwareTags         =infrastructureInfo.softwareTags;          
+        this.nameInfrastructure = infrastructureInfo.nameInfrastructure;    
+        this.acronymInfrastructure = infrastructureInfo.acronymInfrastructure; 
+        this.bdiiHost = infrastructureInfo.bdiiHost;              
+        this.wmsHosts = infrastructureInfo.wmsHosts;              
+        this.pxServerHost = infrastructureInfo.pxServerHost;          
+        this.pxServerPort = infrastructureInfo.pxServerPort;          
+        this.pxServerSecure = infrastructureInfo.pxServerSecure;        
+        this.pxRobotId = infrastructureInfo.pxRobotId;             
+        this.pxRobotVO = infrastructureInfo.pxRobotVO;             
+        this.pxRobotRole = infrastructureInfo.pxRobotRole;           
+        this.pxRobotRenewalFlag = infrastructureInfo.pxRobotRenewalFlag;    
+        this.pxUserProxy = infrastructureInfo.pxUserProxy;           
+        this.softwareTags = infrastructureInfo.softwareTags;          
     }
     
     /**
@@ -761,56 +698,31 @@ class AppInfrastructureInfo {
      * 
      * @see AppInfrastructureInfo
      */
-    public void setInfrastructure(
-             String enableInfrastructure
-            ,String nameInfrastructure    
-            ,String acronymInfrastructure
-            ,String bdiiHost              
-            ,String wmsHosts              
-            ,String pxServerHost          
-            ,String pxServerPort          
-            ,String pxServerSecure        
-            ,String pxRobotId             
-            ,String pxRobotVO             
-            ,String pxRobotRole           
-            ,String pxRobotRenewalFlag    
-            ,String pxUserProxy           
-            ,String softwareTags
-            ) {
-            this.enableInfrastructure =enableInfrastructure;
-            this.nameInfrastructure   =nameInfrastructure;    
-            this.acronymInfrastructure=acronymInfrastructure; 
-            this.bdiiHost             =bdiiHost;              
-            this.wmsHosts             =wmsHosts;              
-            this.pxServerHost         =pxServerHost;          
-            this.pxServerPort         =pxServerPort;          
-            this.pxServerSecure       =pxServerSecure;        
-            this.pxRobotId            =pxRobotId;             
-            this.pxRobotVO            =pxRobotVO;             
-            this.pxRobotRole          =pxRobotRole;           
-            this.pxRobotRenewalFlag   =pxRobotRenewalFlag;    
-            this.pxUserProxy          =pxUserProxy;           
-            this.softwareTags         =softwareTags; 
+    public void setInfrastructure(String enableInfrastructure, String nameInfrastructure, String acronymInfrastructure, String bdiiHost,
+    		String wmsHosts, String pxServerHost, String pxServerPort, String pxServerSecure, String pxRobotId, String pxRobotVO,
+    		String pxRobotRole, String pxRobotRenewalFlag, String pxUserProxy, String softwareTags) {
+    	this.enableInfrastructure = enableInfrastructure;
+        this.nameInfrastructure = nameInfrastructure;    
+        this.acronymInfrastructure = acronymInfrastructure; 
+        this.bdiiHost = bdiiHost;              
+        this.wmsHosts = wmsHosts;              
+        this.pxServerHost = pxServerHost;          
+        this.pxServerPort = pxServerPort;          
+        this.pxServerSecure = pxServerSecure;        
+        this.pxRobotId = pxRobotId;             
+        this.pxRobotVO = pxRobotVO;             
+        this.pxRobotRole = pxRobotRole;           
+        this.pxRobotRenewalFlag = pxRobotRenewalFlag;    
+        this.pxUserProxy = pxUserProxy;           
+        this.softwareTags = softwareTags; 
     } // setInfrastructure
     
     /**
      * AppInfrastructureInfo items names
      */
     private enum Items {
-         enableInfrastructure
-        ,nameInfrastructure   
-        ,acronymInfrastructure
-        ,bdiiHost             
-        ,wmsHosts             
-        ,pxServerHost         
-        ,pxServerPort         
-        ,pxServerSecure       
-        ,pxRobotId            
-        ,pxRobotVO            
-        ,pxRobotRole          
-        ,pxRobotRenewalFlag   
-        ,pxUserProxy          
-        ,softwareTags        
+    	enableInfrastructure, nameInfrastructure, acronymInfrastructure, bdiiHost, wmsHosts, pxServerHost,
+    	pxServerPort, pxServerSecure, pxRobotId, pxRobotVO, pxRobotRole, pxRobotRenewalFlag, pxUserProxy, softwareTags        
     }
     /**
      * Method that evaluates a give AppInfrastructure item name with the given item value
@@ -823,74 +735,46 @@ class AppInfrastructureInfo {
     public void updateInfrastructureValue (String prefItem, String prefValue) {
         switch(Items.valueOf(prefItem)) {
             case enableInfrastructure:
-                if(   !prefValue.equals("")                  
-                   && !enableInfrastructure.equals(prefValue)   
-                  ) enableInfrastructure=prefValue;
+                if (!prefValue.equals("") && !enableInfrastructure.equals(prefValue)) enableInfrastructure = prefValue;
                 break;
             case nameInfrastructure:
-                if(   !prefValue.equals("")                  
-                   && !nameInfrastructure.equals(prefValue)   
-                  ) nameInfrastructure=prefValue;
+                if (!prefValue.equals("") && !nameInfrastructure.equals(prefValue)) nameInfrastructure = prefValue;
                 break;
             case acronymInfrastructure:
-                if(   !prefValue.equals("")                  
-                   && !acronymInfrastructure.equals(prefValue)   
-                  ) acronymInfrastructure=prefValue;
+                if (!prefValue.equals("") && !acronymInfrastructure.equals(prefValue)) acronymInfrastructure = prefValue;
                 break;
            case bdiiHost:
-                if(   !prefValue.equals("")                  
-                   && !bdiiHost.equals(prefValue)   
-                  ) bdiiHost=prefValue;
+                if (!prefValue.equals("") && !bdiiHost.equals(prefValue)) bdiiHost = prefValue;
                 break;
            case wmsHosts:
-                if(   !prefValue.equals("")                  
-                   && !wmsHosts.equals(prefValue)   
-                  ) wmsHosts=prefValue;
+                if (!prefValue.equals("") && !wmsHosts.equals(prefValue)) wmsHosts = prefValue;
                 break;
            case pxServerHost:
-                if(   !prefValue.equals("")                  
-                   && !pxServerHost.equals(prefValue)   
-                  ) pxServerHost=prefValue;
+                if (!prefValue.equals("") && !pxServerHost.equals(prefValue)) pxServerHost = prefValue;
                 break; 
            case pxServerPort:
-                if(   !prefValue.equals("")                  
-                   && !pxServerPort.equals(prefValue)   
-                  ) pxServerPort=prefValue;
+                if (!prefValue.equals("") && !pxServerPort.equals(prefValue)) pxServerPort = prefValue;
                 break; 
            case pxServerSecure:
-                if(   !prefValue.equals("")                  
-                   && !pxServerSecure.equals(prefValue)   
-                  ) pxServerSecure=prefValue;
+                if (!prefValue.equals("") && !pxServerSecure.equals(prefValue)) pxServerSecure = prefValue;
                 break;     
            case pxRobotId:
-                if(   !prefValue.equals("")                  
-                   && !pxRobotId.equals(prefValue)   
-                  ) pxRobotId=prefValue;
+                if (!prefValue.equals("") && !pxRobotId.equals(prefValue)) pxRobotId = prefValue;
                 break; 
            case pxRobotVO:
-                if(   !prefValue.equals("")                  
-                   && !pxRobotVO.equals(prefValue)   
-                  ) pxRobotVO=prefValue;
+                if (!prefValue.equals("") && !pxRobotVO.equals(prefValue)) pxRobotVO = prefValue;
                 break;   
            case pxRobotRole:
-                if(   !prefValue.equals("")                  
-                   && !pxRobotRole.equals(prefValue)   
-                  ) pxRobotRole=prefValue;
+                if (!prefValue.equals("") && !pxRobotRole.equals(prefValue)) pxRobotRole = prefValue;
                 break;       
            case pxRobotRenewalFlag:
-                if(   !prefValue.equals("")                  
-                   && !pxRobotRenewalFlag.equals(prefValue)   
-                  ) pxRobotRenewalFlag=prefValue;
+                if (!prefValue.equals("") && !pxRobotRenewalFlag.equals(prefValue)) pxRobotRenewalFlag = prefValue;
                 break;       
            case pxUserProxy:
-                if(   !prefValue.equals("")                  
-                   && !pxUserProxy.equals(prefValue)   
-                  ) pxUserProxy=prefValue;
+                if (!prefValue.equals("") && !pxUserProxy.equals(prefValue)) pxUserProxy = prefValue;
                 break;     
            case softwareTags:
-                if(   !prefValue.equals("")                  
-                   && !softwareTags.equals(prefValue)   
-                  ) softwareTags=prefValue;
+                if (!prefValue.equals("") && !softwareTags.equals(prefValue)) softwareTags = prefValue;
                 break;    
            default:;
         } // switch

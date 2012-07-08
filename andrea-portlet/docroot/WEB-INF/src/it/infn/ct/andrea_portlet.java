@@ -23,38 +23,42 @@ limitations under the License.
 package it.infn.ct;
 
 // Import generic java libraries
-import java.io.*;
-import java.net.*;
+import it.infn.ct.GridEngine.Job.InfrastructureInfo;
+import it.infn.ct.GridEngine.Job.MultiInfrastructureJobSubmission;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Calendar;
-import java.text.SimpleDateFormat;
 
-// Importing portlet libraries
-import javax.portlet.*;
- 
-// Importing liferay libraries
-import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portal.model.Company;
-import com.liferay.portal.model.User;
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+import javax.portlet.GenericPortlet;
+import javax.portlet.PortletContext;
+import javax.portlet.PortletException;
+import javax.portlet.PortletMode;
+import javax.portlet.PortletPreferences;
+import javax.portlet.PortletRequestDispatcher;
+import javax.portlet.PortletSession;
+import javax.portlet.PortletURL;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 
-// Importing Apache libraries
-import org.apache.commons.fileupload.*; 
-import org.apache.commons.fileupload.disk.DiskFileItemFactory; 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
 
-// Importing GridEngine Job libraries 
-import it.infn.ct.GridEngine.Job.*;
-import it.infn.ct.GridEngine.Job.MultiInfrastructureJobSubmission;
-import it.infn.ct.GridEngine.UsersTracking.UsersTrackingDBInterface;
-        
-// Logging        
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.model.User;
+import com.liferay.portal.theme.ThemeDisplay;
 
 /**
  *  This is the class that overrides the GenericPortlet class methods
@@ -95,10 +99,10 @@ public class andrea_portlet extends GenericPortlet {
      * parameter inside the actionRequest object
      */
     private enum Actions {
-         ACTION_ACTIVATE // User (Admin) activated the portlet
-        ,ACTION_INPUT    // User asked to submit a job
-        ,ACTION_SUBMIT   // User asked to rerutn to the input form
-        ,ACTION_PILOT    // The user did something in the edit pilot screen pane
+        ACTION_ACTIVATE, // User (Admin) activated the portlet
+        ACTION_INPUT,    // User asked to submit a job
+        ACTION_SUBMIT,   // User asked to rerutn to the input form
+        ACTION_PILOT     // The user did something in the edit pilot screen pane
         }
 
     /**
@@ -107,10 +111,10 @@ public class andrea_portlet extends GenericPortlet {
      * inside the renderResponse object
      */
     private enum Views {
-         VIEW_ACTIVATE   // Show acrivation pane (called 1st time only)
-        ,VIEW_INPUT      // View containing application input fields
-        ,VIEW_SUBMIT     // View reporting the job submission
-        ,VIEW_PILOT      // Shows the pilot script and makes it editable
+        VIEW_ACTIVATE,   // Show acrivation pane (called 1st time only)
+        VIEW_INPUT,      // View containing application input fields
+        VIEW_SUBMIT,     // View reporting the job submission
+        VIEW_PILOT       // Shows the pilot script and makes it editable
     }
     
     /**
@@ -118,7 +122,7 @@ public class andrea_portlet extends GenericPortlet {
      * 
      * @see AppPreferences
      */
-    AppPreferences appPreferences     = new AppPreferences(_log);
+    AppPreferences appPreferences = new AppPreferences(_log);
     AppPreferences appInitPreferences = new AppPreferences(_log);
     
     /**
@@ -128,38 +132,37 @@ public class andrea_portlet extends GenericPortlet {
      */
     class AppInput {
         // Applicatoin inputs
-        String inputFileName;   // Filename for application input file
-        String inputFileText;   // Text for application input file 
-        String jobIdentifier;   // User' given job identifier                
+        String inputFileName = null;   // Filename for application input file
+        String inputFileText = null;   // Text for application input file 
+        String jobIdentifier = null;   // User' given job identifier                
         
         // Each inputSandobox file must be declared below
         // This variable contains the content of an uploaded file
-        String inputSandbox_inputFile;        
+        String inputSandbox_inputFile = null;        
         
         // Some user level information
         // must be stored as well
-        String username;
-        String timestamp;
+        String username = null;
+        String timestamp = null;
         
         /**
          * Standard constructor just initialize empty values
          */
         public AppInput() {
-            inputFileName
-           =inputFileText
-           =jobIdentifier
-           =inputSandbox_inputFile
-           =username
-           =timestamp
-           ="";
+           inputFileName = "";
+           inputFileText = "";
+           jobIdentifier = ""; 
+           inputSandbox_inputFile = ""; 
+           username = "";
+           timestamp = "";
         }
     } // AppInput
         
     // Liferay portal data
     // Classes below are used by this portlet code to get information
     // about the current user    
-    public String       portalName="localhost";  // Name of the hosting portal   
-    public String       appServerPath;           // This variable stores the absolute path of the Web applications
+    public String portalName = "localhost";  // Name of the hosting portal   
+    public String appServerPath = null;           // This variable stores the absolute path of the Web applications
         
     // Other misc valuse
     // (!) Pay attention that altough the use of the LS variable
@@ -174,7 +177,7 @@ public class andrea_portlet extends GenericPortlet {
     
     // This variable holds the GridEngine' GridOperation identifier
     // associated to this application
-    int gridOperationId=-1;
+    int gridOperationId = -1;
         
     //----------------------------
     // Portlet Overriding Methods
@@ -194,45 +197,43 @@ public class andrea_portlet extends GenericPortlet {
      * @throws PortletException 
      */
     @Override
-    public void init() 
-    throws PortletException                
-    {         	
+    public void init() throws PortletException {         	
         // Load default values from WEBINF/portlet.xml     
-        appInitPreferences.setGridOperationDesc (""+getInitParameter( "gridOperationDesc"));
-        appInitPreferences.setPortletVersion    (""+getInitParameter(    "portletVersion"));
-        appInitPreferences.setLogLevel          (""+getInitParameter(          "logLevel"));
-        appInitPreferences.setNumInfrastructures(""+getInitParameter("numInfrastructures"));
-        appInitPreferences.setGridOperationId   (""+getInitParameter(   "gridOperationId"));
+        appInitPreferences.setGridOperationDesc(getInitParameter("gridOperationDesc"));
+        appInitPreferences.setPortletVersion(getInitParameter("portletVersion").toString());
+        appInitPreferences.setLogLevel(getInitParameter("logLevel").toString());
+        appInitPreferences.setNumInfrastructures(getInitParameter("numInfrastructures").toString());
+        appInitPreferences.setGridOperationId(getInitParameter("gridOperationId").toString());
+        
         // Get the number of infrastructures to load
-        int numInfra=appInitPreferences.getNumInfrastructures();                
-        _log.info("Number of infrastructures: '"+numInfra+"'");
+        int numInfra = appInitPreferences.getNumInfrastructures();                
+        _log.info("Number of infrastructures: '" + numInfra + "'");
         // Load infrastructure settings
-        for(int i=0; i<numInfra; i++) {
-            int j=i+1;
-            appInitPreferences.setInfrastructure(
-                      i                    
-                    , ""+getInitParameter(j+ "_enableInfrastructure")
-                    , ""+getInitParameter(j+   "_nameInfrastructure")
-                    , ""+getInitParameter(j+"_acronymInfrastructure")
-                    , ""+getInitParameter(j+             "_bdiiHost")
-                    , ""+getInitParameter(j+             "_wmsHosts")
-                    , ""+getInitParameter(j+         "_pxServerHost")
-                    , ""+getInitParameter(j+         "_pxServerPort")
-                    , ""+getInitParameter(j+       "_pxServerSecure")
-                    , ""+getInitParameter(j+            "_pxRobotId")
-                    , ""+getInitParameter(j+            "_pxRobotVO")
-                    , ""+getInitParameter(j+          "_pxRobotRole")
-                    , ""+getInitParameter(j+   "_pxRobotRenewalFlag")
-                    , ""+getInitParameter(j+          "_pxUserProxy")
-                    , ""+getInitParameter(j+         "_softwareTags")
-                   );
+        for(int i = 0; i < numInfra; i++) {
+            int j = i+1;
+            appInitPreferences.setInfrastructure(i,                    
+                    getInitParameter(j + "_enableInfrastructure"),
+                    getInitParameter(j + "_nameInfrastructure"),
+                    getInitParameter(j + "_acronymInfrastructure"),
+                    getInitParameter(j + "_bdiiHost"),
+                    getInitParameter(j + "_wmsHosts"),
+                    getInitParameter(j + "_pxServerHost"),
+                    getInitParameter(j + "_pxServerPort"),
+                    getInitParameter(j + "_pxServerSecure"),
+                    getInitParameter(j + "_pxRobotId"),
+                    getInitParameter(j + "_pxRobotVO"),
+                    getInitParameter(j + "_pxRobotRole"),
+                    getInitParameter(j + "_pxRobotRenewalFlag"),
+                    getInitParameter(j + "_pxUserProxy"),
+                    getInitParameter(j + "_softwareTags"));
         } // Load infrastructure settings
-        appInitPreferences.setSciGwyUserTrackingDB_Hostname(""+getInitParameter("sciGwyUserTrackingDB_Hostname"));
-        appInitPreferences.setSciGwyUserTrackingDB_Username(""+getInitParameter("sciGwyUserTrackingDB_Username"));
-        appInitPreferences.setSciGwyUserTrackingDB_Password(""+getInitParameter("sciGwyUserTrackingDB_Password"));
-        appInitPreferences.setSciGwyUserTrackingDB_Database(""+getInitParameter("sciGwyUserTrackingDB_Database"));        
-        appInitPreferences.setJobRequirements              (""+getInitParameter(              "jobRequirements"));
-        appInitPreferences.setPilotScript                  (""+getInitParameter(                  "pilotScript"));                
+        
+        appInitPreferences.setSciGwyUserTrackingDB_Hostname(getInitParameter("sciGwyUserTrackingDB_Hostname"));
+        appInitPreferences.setSciGwyUserTrackingDB_Username(getInitParameter("sciGwyUserTrackingDB_Username"));
+        appInitPreferences.setSciGwyUserTrackingDB_Password(getInitParameter("sciGwyUserTrackingDB_Password"));
+        appInitPreferences.setSciGwyUserTrackingDB_Database(getInitParameter("sciGwyUserTrackingDB_Database"));        
+        appInitPreferences.setJobRequirements(getInitParameter("jobRequirements"));
+        appInitPreferences.setPilotScript(getInitParameter("pilotScript"));                
         
         // Assigns the log level      
         _log.setLogLevel(appInitPreferences.getLogLevel());
@@ -256,23 +257,22 @@ public class andrea_portlet extends GenericPortlet {
      * @throws IOException 
      */
     @Override
-    public void processAction(ActionRequest request, ActionResponse response)
-        throws PortletException, IOException
-    {
+    public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
         _log.info("calling processAction ...");
 
         // Determine the username
-        ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
-        User                 user = themeDisplay.getUser();
-        String           username = user.getScreenName();        
+        ThemeDisplay themeDisplay = (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
+        User user = themeDisplay.getUser();
+        String username = user.getScreenName();        
         // Determine the application pathname                   
         PortletSession portletSession = request.getPortletSession();
         PortletContext portletContext = portletSession.getPortletContext();
-        appServerPath                 = portletContext.getRealPath("/");        
+        appServerPath = portletContext.getRealPath("/");        
+
         // Show info
-        _log.info("appUserName   : '"+username     +"'"
-              +LS+"appServerPath : '"+appServerPath+"'"
-                );                                                
+        _log.info("appUserName   : '" + username + "'" + LS +
+                  "appServerPath : '" + appServerPath + "'");                                                
+
         // Determine the current portlet mode and forward this state to the response
         // Accordingly to JSRs168/286 the standard portlet modes are:
         // VIEW, EDIT, HELP
@@ -301,9 +301,7 @@ public class andrea_portlet extends GenericPortlet {
             
             String actionStatus=request.getParameter("PortletStatus");
             // Assigns the default ACTION mode
-            if(   null==actionStatus 
-               || actionStatus.equals("")) 
-            	actionStatus=""+Actions.ACTION_INPUT;
+            if (null == actionStatus  || actionStatus.equals("")) actionStatus = Actions.ACTION_INPUT.toString();
                         
             // Different actions will be performed accordingly to the
             // different possible statuses
@@ -313,27 +311,27 @@ public class andrea_portlet extends GenericPortlet {
                     // Called when activating the portlet for the first time
                     // it will be used to save the gridOperationId value
                     // into the application preferences 
-                    gridOperationId=Integer.parseInt(request.getParameter("gridOperationId"));
-                    _log.info("Received gridOperationId: '"+gridOperationId+"'");                                        
+                    gridOperationId = Integer.parseInt(request.getParameter("gridOperationId"));
+                    _log.info("Received gridOperationId: '" + gridOperationId + "'");                                        
                     // If the application is registered go to the VIEW_INPUT
                     // and the application will no longer go to the ACTIVATE pane                     
-                    if(gridOperationId > 0) {
+                    if (gridOperationId > 0) {
                         storePreferences(request);                    
-                        response.setRenderParameter("PortletStatus",""+Views.VIEW_INPUT);
+                        response.setRenderParameter("PortletStatus", Views.VIEW_INPUT.toString());
                     }                     
                 break;
                 case ACTION_INPUT:
                     _log.info("Got action: 'ACTION_INPUT'");
                     
                     // Assign the correct view
-                    response.setRenderParameter("PortletStatus",""+Views.VIEW_INPUT);
+                    response.setRenderParameter("PortletStatus", Views.VIEW_INPUT.toString());
                 break;
                 case ACTION_PILOT:
                     _log.info("Got action: 'ACTION_PILOT'");
                     // Stores the new pilot script
-                    String pilotScript=request.getParameter("pilotScript");
+                    String pilotScript = request.getParameter("pilotScript");
                     pilotScript.replaceAll("\r", "");
-                    storeString(appServerPath+"WEB-INF/job/"+appPreferences.getPilotScript(),pilotScript);
+                    storeString(appServerPath + "WEB-INF/job/" + appPreferences.getPilotScript(), pilotScript);
                     // Assign the correct view
                     response.setPortletMode(PortletMode.EDIT);
                 break;
@@ -341,21 +339,21 @@ public class andrea_portlet extends GenericPortlet {
                     _log.info("Got action: 'ACTION_SUBMIT'");
                                         
                     // Get current preference values
-                    getPreferences(request,null);
+                    getPreferences(request, null);
                                         
                     // Create the appInput object
                     AppInput appInput = new AppInput();
                     
                     // Stores the user submitting the job
-                    appInput.username=username;
+                    appInput.username = username;
                     
                     // Determine the submissionTimeStamp                    
                     SimpleDateFormat dateFormat = new SimpleDateFormat(tsFormat);
                     String timestamp = dateFormat.format(Calendar.getInstance().getTime());
-                    appInput.timestamp=timestamp;
+                    appInput.timestamp = timestamp;
                                        
                     // Process input fields and files to upload
-                    getInputForm(request,appInput);
+                    getInputForm(request, appInput);
                     
                     // Following files have to be updated with
                     // values taken from textareas or from uploaded files:
@@ -366,12 +364,12 @@ public class andrea_portlet extends GenericPortlet {
                     submitJob(appInput);
                     
                     // Send the jobIdentifier and assign the correct view                    
-                    response.setRenderParameter("PortletStatus",""+Views.VIEW_SUBMIT);
-                    response.setRenderParameter("jobIdentifier",""+appInput.jobIdentifier);
+                    response.setRenderParameter("PortletStatus", Views.VIEW_SUBMIT.toString());
+                    response.setRenderParameter("jobIdentifier", appInput.jobIdentifier);
                 break;
                 default:
-                     _log.info("Unhandled action: '"+actionStatus+"'");                            
-                     response.setRenderParameter("PortletStatus",""+Views.VIEW_INPUT);
+                     _log.info("Unhandled action: '" + actionStatus + "'");                            
+                     response.setRenderParameter("PortletStatus", Views.VIEW_INPUT.toString());
             } // switch actionStatus
         } // VIEW
         //----------
@@ -380,7 +378,7 @@ public class andrea_portlet extends GenericPortlet {
         // The HELP mode used to give portlet usage HELP to the user
         // This code will be called after the call to doHelp method                         
         //----------
-        else if(mode.equals(PortletMode.HELP)) {            
+        else if (mode.equals(PortletMode.HELP)) {            
             _log.info("Portlet mode: HELP");                        
         }
         //----------
@@ -392,52 +390,50 @@ public class andrea_portlet extends GenericPortlet {
         // The code below just stores new preference values or
         // reacts to the preference settings changes
         //----------
-        else if(mode.equals(PortletMode.EDIT)) {            
+        else if (mode.equals(PortletMode.EDIT)) {            
             _log.info("Portlet mode: EDIT");                                 
             
             // Retrieve the current ifnrstructure in preference
-            int numInfrastructures=appPreferences.getNumInfrastructures    ();
-            int currInfra         =appPreferences.getCurrPaneInfrastructure();            
+            int numInfrastructures = appPreferences.getNumInfrastructures();
+            int currInfra = appPreferences.getCurrPaneInfrastructure();            
             
-            _log.info(
-                   LS+"Number of infrastructures: '"+numInfrastructures+"'"
-                  +LS+"currentInfrastructure:     '"+currInfra         +"'"
-                  +LS);
+            _log.info(LS + "Number of infrastructures: '" + numInfrastructures + "'" + LS +  
+                      "currentInfrastructure:     '" + currInfra + "'" + LS);
             
             // Take care of the preference action (Infrastructure preferences)
             // <,>,+,- buttons
-            String pref_action=""+request.getParameter("pref_action");
-            _log.info("pref_action: '"+pref_action+"'");
+            String pref_action = request.getParameter("pref_action");
+            _log.info("pref_action: '" + pref_action + "'");
 
             // Reacts to the current infrastructure change and
             // determine the next view mode (return to the input pane)                        
-            if(pref_action.equalsIgnoreCase("next")) {  
+            if (pref_action.equalsIgnoreCase("next")) {  
                 appPreferences.switchNextInfrastructure();                
-                _log.info("Got next infrastructure action; switching to: '"+appPreferences.getCurrPaneInfrastructure()+"'");
+                _log.info("Got next infrastructure action; switching to: '" + appPreferences.getCurrPaneInfrastructure() + "'");
             }
-            else if(pref_action.equalsIgnoreCase("previous")) {
+            else if (pref_action.equalsIgnoreCase("previous")) {
                 appPreferences.switchPreviousInfrastructure();
-                _log.info("Got prev infrastructure action; switching to: '"+appPreferences.getCurrPaneInfrastructure()+"'");
+                _log.info("Got prev infrastructure action; switching to: '" + appPreferences.getCurrPaneInfrastructure() + "'");
             }
-            else if(pref_action.equalsIgnoreCase("add")) {
+            else if (pref_action.equalsIgnoreCase("add")) {
                 appPreferences.addNewInfrastructure();                                
-                _log.info("Got add infrastructure action; current infrastrucure is now: '"+appPreferences.getCurrPaneInfrastructure()+"'");                
+                _log.info("Got add infrastructure action; current infrastrucure is now: '" + appPreferences.getCurrPaneInfrastructure() + "'");                
             }
-            else if(pref_action.equalsIgnoreCase("remove")) {
+            else if (pref_action.equalsIgnoreCase("remove")) {
                 appPreferences.delCurrInfrastructure();                                  
-                _log.info("Got remove infrastructure action; current infrastrucure is now: '"+appPreferences.getCurrPaneInfrastructure()+"' and infrastructures are now: '"+appPreferences.getNumInfrastructures()+"'");                
+                _log.info("Got remove infrastructure action; current infrastrucure is now: '" + appPreferences.getCurrPaneInfrastructure() +
+                		  "' and infrastructures are now: '" + appPreferences.getNumInfrastructures() + "'");                
             }
-            else if(pref_action.equalsIgnoreCase("done")) {
+            else if (pref_action.equalsIgnoreCase("done")) {
                 // None of the above actions selected; return to the VIEW mode
                 response.setPortletMode(PortletMode.VIEW);
-                response.setRenderParameter("PortletStatus", ""+Views.VIEW_INPUT);                
+                response.setRenderParameter("PortletStatus", Views.VIEW_INPUT.toString());                
             }
-            else if(pref_action.equalsIgnoreCase("viewPilot")) {                
+            else if (pref_action.equalsIgnoreCase("viewPilot")) {                
                 // None of the above actions selected; return to the VIEW mode
                 response.setPortletMode(PortletMode.VIEW);
-                response.setRenderParameter("PortletStatus",""+Views.VIEW_PILOT);
-                response.setRenderParameter("pilotScript"
-                                            ,updateString(appServerPath+"WEB-INF/job/"+appPreferences.getPilotScript()));                
+                response.setRenderParameter("PortletStatus", Views.VIEW_PILOT.toString());
+                response.setRenderParameter("pilotScript", updateString(appServerPath+"WEB-INF/job/" + appPreferences.getPilotScript()));                
             }
             else {
                 // No other special actions to do ...
@@ -445,124 +441,124 @@ public class andrea_portlet extends GenericPortlet {
             
             // Number of infrastructures and Currentinfrastructure values
             // may be changed by add/delete,<,> actions
-            int newCurrInfra         =appPreferences.getCurrPaneInfrastructure();   
-            int newNumInfrastructures=appPreferences.getNumInfrastructures    ();
+            //int newCurrInfra = appPreferences.getCurrPaneInfrastructure();   
+            int newNumInfrastructures = appPreferences.getNumInfrastructures();
             
             // Store infrastructure changes
-            String infrastructuresInformations="";
+            String infrastructuresInformations = "";
                 
             // Preference settings (logLevel has been taken above)                                    
-            String newpref_logLevel        = ""+request.getParameter(       "pref_logLevel");
-            String newpref_gridOperationId = ""+request.getParameter("pref_gridOperationId");
-            String newpref_jobRequirements = ""+request.getParameter("pref_jobRequirements");
-            String newpref_pilotScript     = ""+request.getParameter(    "pref_pilotScript");                        
+            String newpref_logLevel = request.getParameter("pref_logLevel");
+            String newpref_gridOperationId = request.getParameter("pref_gridOperationId");
+            String newpref_jobRequirements = request.getParameter("pref_jobRequirements");
+            String newpref_pilotScript = request.getParameter("pref_pilotScript");                        
                 
             // Store infrastructure changes only if the user did not select the delete button
-            if(newNumInfrastructures >= numInfrastructures) {
+            if (newNumInfrastructures >= numInfrastructures) {
                 // Current infrastructure preference settings
-                AppInfrastructureInfo newpref_appInfrastructureInfo=new AppInfrastructureInfo(
-                      ""+request.getParameter( "pref_enableInfrastructure")                
-                    , ""+request.getParameter(   "pref_nameInfrastructure")
-                    , ""+request.getParameter("pref_acronymInfrastructure")
-                    , ""+request.getParameter(             "pref_bdiiHost")
-                    , ""+request.getParameter(             "pref_wmsHosts")
-                    , ""+request.getParameter(         "pref_pxServerHost")
-                    , ""+request.getParameter(         "pref_pxServerPort")
-                    , ""+request.getParameter(       "pref_pxServerSecure")
-                    , ""+request.getParameter(            "pref_pxRobotId")
-                    , ""+request.getParameter(            "pref_pxRobotVO")
-                    , ""+request.getParameter(          "pref_pxRobotRole")
-                    , ""+request.getParameter(   "pref_pxRobotRenewalFlag")
-                    , ""+request.getParameter(          "pref_pxUserProxy")
-                    , ""+request.getParameter(         "pref_softwareTags")
-                    );                    
+                AppInfrastructureInfo newpref_appInfrastructureInfo = new AppInfrastructureInfo(
+                		request.getParameter("pref_enableInfrastructure"),                
+                		request.getParameter("pref_nameInfrastructure"),
+                		request.getParameter("pref_acronymInfrastructure"),
+                		request.getParameter("pref_bdiiHost"),
+                		request.getParameter("pref_wmsHosts"),
+                		request.getParameter("pref_pxServerHost"),
+                		request.getParameter("pref_pxServerPort"),
+                		request.getParameter("pref_pxServerSecure"),
+                		request.getParameter("pref_pxRobotId"),
+                		request.getParameter("pref_pxRobotVO"),
+                		request.getParameter("pref_pxRobotRole"),
+                		request.getParameter("pref_pxRobotRenewalFlag"),
+                		request.getParameter("pref_pxUserProxy"),
+                		request.getParameter("pref_softwareTags"));
+                
                 // newNumInfrastructures == numInfrastructures
                 // the user selected < or > buttons; changes goes to the old (currInfra) value
                 // otherwise + has been selected; changes goes again on the old (currInfra) value
                 // the - case has been filtered out by newNumInfrastructures >= numInfrastructures
-                String    pref_enableInfrastructure =appPreferences.getEnableInfrastructure (currInfra-1);
-                String    pref_nameInfrastructure   =appPreferences.getNameInfrastructure   (currInfra-1);
-                String    pref_acronymInfrastructure=appPreferences.getAcronymInfrastructure(currInfra-1);
-                String    pref_bdiiHost             =appPreferences.getBdiiHost             (currInfra-1);
-                String    pref_wmsHosts             =appPreferences.getWmsHosts             (currInfra-1);
-                String    pref_pxServerHost         =appPreferences.getPxServerHost         (currInfra-1);
-                String    pref_pxServerPort         =appPreferences.getPxServerPort         (currInfra-1);
-                String    pref_pxServerSecure       =appPreferences.getPxServerSecure       (currInfra-1);
-                String    pref_pxRobotId            =appPreferences.getPxRobotId            (currInfra-1);
-                String    pref_pxRobotVO            =appPreferences.getPxRobotVO            (currInfra-1);
-                String    pref_pxRobotRole          =appPreferences.getPxRobotRole          (currInfra-1);
-                String    pref_pxRobotRenewalFlag   =appPreferences.getPxRobotRenewalFlag   (currInfra-1);
-                String    pref_pxUserProxy          =appPreferences.getPxUserProxy          (currInfra-1);
-                String    pref_softwareTags         =appPreferences.getSoftwareTags         (currInfra-1);
-                // New preference values
-                String newpref_enableInfrastructure =newpref_appInfrastructureInfo.getEnableInfrastructure ();
-                String newpref_nameInfrastructure   =newpref_appInfrastructureInfo.getNameInfrastructure   ();
-                String newpref_acronymInfrastructure=newpref_appInfrastructureInfo.getAcronymInfrastructure();
-                String newpref_bdiiHost             =newpref_appInfrastructureInfo.getBdiiHost             ();
-                String newpref_wmsHosts             =newpref_appInfrastructureInfo.getWmsHosts             ();
-                String newpref_pxServerHost         =newpref_appInfrastructureInfo.getPxServerHost         ();
-                String newpref_pxServerPort         =newpref_appInfrastructureInfo.getPxServerPort         ();
-                String newpref_pxServerSecure       =newpref_appInfrastructureInfo.getPxServerSecure       ();
-                String newpref_pxRobotId            =newpref_appInfrastructureInfo.getPxRobotId            ();
-                String newpref_pxRobotVO            =newpref_appInfrastructureInfo.getPxRobotVO            ();
-                String newpref_pxRobotRole          =newpref_appInfrastructureInfo.getPxRobotRole          ();
-                String newpref_pxRobotRenewalFlag   =newpref_appInfrastructureInfo.getPxRobotRenewalFlag   ();
-                String newpref_pxUserProxy          =newpref_appInfrastructureInfo.getPxUserProxy          ();
-                String newpref_softwareTags         =newpref_appInfrastructureInfo.getSoftwareTags         ();
-                // Prepare the Log string with differences
-                infrastructuresInformations+=
-                    LS+"Infrastructure #"+currInfra
-                    +LS+"  enableInfrastructure  : '"+pref_enableInfrastructure +"' -> '"+newpref_enableInfrastructure +"'"
-                    +LS+"  nameInfrastructures   : '"+pref_nameInfrastructure   +"' -> '"+newpref_nameInfrastructure   +"'"
-                    +LS+"  acronymInfrastructures: '"+pref_acronymInfrastructure+"' -> '"+newpref_acronymInfrastructure+"'"
-                    +LS+"  bdiiHost              : '"+pref_bdiiHost             +"' -> '"+newpref_bdiiHost             +"'"
-                    +LS+"  wmsHosts              : '"+pref_wmsHosts             +"' -> '"+newpref_wmsHosts             +"'"
-                    +LS+"  pxServerHost          : '"+pref_pxServerHost         +"' -> '"+newpref_pxServerHost         +"'"
-                    +LS+"  pxServerPort          : '"+pref_pxServerPort         +"' -> '"+newpref_pxServerPort         +"'"
-                    +LS+"  pxServerSecure        : '"+pref_pxServerSecure       +"' -> '"+newpref_pxServerSecure       +"'"
-                    +LS+"  pxRobotId             : '"+pref_pxRobotId            +"' -> '"+newpref_pxRobotId            +"'"
-                    +LS+"  pxRobotVO             : '"+pref_pxRobotVO            +"' -> '"+newpref_pxRobotVO            +"'"
-                    +LS+"  pxRobotRole           : '"+pref_pxRobotRole          +"' -> '"+newpref_pxRobotRole          +"'"
-                    +LS+"  pxRobotRenewalFlag    : '"+pref_pxRobotRenewalFlag   +"' -> '"+newpref_pxRobotRenewalFlag   +"'"
-                    +LS+"  pxUserProxy           : '"+pref_pxUserProxy          +"' -> '"+newpref_pxUserProxy          +"'"
-                    +LS+"  softwareTags          : '"+pref_softwareTags         +"' -> '"+newpref_softwareTags         +"'"    
-                    +LS;             
+				String pref_enableInfrastructure = appPreferences.getEnableInfrastructure(currInfra - 1);
+				String pref_nameInfrastructure = appPreferences.getNameInfrastructure(currInfra - 1);
+				String pref_acronymInfrastructure = appPreferences.getAcronymInfrastructure(currInfra - 1);
+				String pref_bdiiHost = appPreferences.getBdiiHost(currInfra - 1);
+				String pref_wmsHosts = appPreferences.getWmsHosts(currInfra - 1);
+				String pref_pxServerHost = appPreferences.getPxServerHost(currInfra - 1);
+				String pref_pxServerPort = appPreferences.getPxServerPort(currInfra - 1);
+				String pref_pxServerSecure = appPreferences.getPxServerSecure(currInfra - 1);
+				String pref_pxRobotId = appPreferences.getPxRobotId(currInfra - 1);
+				String pref_pxRobotVO = appPreferences.getPxRobotVO(currInfra - 1);
+				String pref_pxRobotRole = appPreferences.getPxRobotRole(currInfra - 1);
+				String pref_pxRobotRenewalFlag = appPreferences.getPxRobotRenewalFlag(currInfra - 1);
+				String pref_pxUserProxy = appPreferences.getPxUserProxy(currInfra - 1);
+				String pref_softwareTags = appPreferences.getSoftwareTags(currInfra - 1);
+
+				// New preference values
+				String newpref_enableInfrastructure = newpref_appInfrastructureInfo.getEnableInfrastructure();
+				String newpref_nameInfrastructure = newpref_appInfrastructureInfo.getNameInfrastructure();
+				String newpref_acronymInfrastructure = newpref_appInfrastructureInfo.getAcronymInfrastructure();
+				String newpref_bdiiHost = newpref_appInfrastructureInfo.getBdiiHost();
+				String newpref_wmsHosts = newpref_appInfrastructureInfo.getWmsHosts();
+				String newpref_pxServerHost = newpref_appInfrastructureInfo.getPxServerHost();
+				String newpref_pxServerPort = newpref_appInfrastructureInfo.getPxServerPort();
+				String newpref_pxServerSecure = newpref_appInfrastructureInfo.getPxServerSecure();
+				String newpref_pxRobotId = newpref_appInfrastructureInfo.getPxRobotId();
+				String newpref_pxRobotVO = newpref_appInfrastructureInfo.getPxRobotVO();
+				String newpref_pxRobotRole = newpref_appInfrastructureInfo.getPxRobotRole();
+				String newpref_pxRobotRenewalFlag = newpref_appInfrastructureInfo.getPxRobotRenewalFlag();
+				String newpref_pxUserProxy = newpref_appInfrastructureInfo.getPxUserProxy();
+				String newpref_softwareTags = newpref_appInfrastructureInfo.getSoftwareTags();
+
+				// Prepare the Log string with differences
+                infrastructuresInformations += LS +
+                		"Infrastructure #" + currInfra + LS +
+                		"  enableInfrastructure  : '" + pref_enableInfrastructure + "' -> '" + newpref_enableInfrastructure + "'" + LS +
+                		"  nameInfrastructures   : '" + pref_nameInfrastructure + "' -> '" + newpref_nameInfrastructure + "'" + LS +
+                		"  acronymInfrastructures: '" + pref_acronymInfrastructure + "' -> '" + newpref_acronymInfrastructure + "'" + LS +
+                		"  bdiiHost              : '" + pref_bdiiHost  + "' -> '" + newpref_bdiiHost + "'" + LS +
+                		"  wmsHosts              : '" + pref_wmsHosts  + "' -> '" + newpref_wmsHosts + "'" + LS +
+                		"  pxServerHost          : '" + pref_pxServerHost + "' -> '" + newpref_pxServerHost + "'" + LS +
+                		"  pxServerPort          : '" + pref_pxServerPort + "' -> '" + newpref_pxServerPort + "'" + LS +
+                		"  pxServerSecure        : '" + pref_pxServerSecure + "' -> '" + newpref_pxServerSecure + "'" + LS +
+                		"  pxRobotId             : '" + pref_pxRobotId + "' -> '" + newpref_pxRobotId + "'" + LS +
+                		"  pxRobotVO             : '" + pref_pxRobotVO + "' -> '" + newpref_pxRobotVO + "'" + LS +
+                		"  pxRobotRole           : '" + pref_pxRobotRole + "' -> '" + newpref_pxRobotRole + "'" + LS +
+                		"  pxRobotRenewalFlag    : '" + pref_pxRobotRenewalFlag + "' -> '" + newpref_pxRobotRenewalFlag +"'" + LS +
+                		"  pxUserProxy           : '" + pref_pxUserProxy + "' -> '" + newpref_pxUserProxy + "'" + LS +
+                		"  softwareTags          : '" + pref_softwareTags + "' -> '" + newpref_softwareTags + "'" + LS;
+
                 // Assigns the new values
-                appPreferences.setInfrastructure(
-                        currInfra-1
-                        , newpref_enableInfrastructure
-                        , newpref_nameInfrastructure
-                        , newpref_acronymInfrastructure
-                        , newpref_bdiiHost
-                        , newpref_wmsHosts
-                        , newpref_pxServerHost
-                        , newpref_pxServerPort
-                        , newpref_pxServerSecure
-                        , newpref_pxRobotId
-                        , newpref_pxRobotVO
-                        , newpref_pxRobotRole
-                        , newpref_pxRobotRenewalFlag
-                        , newpref_pxUserProxy
-                        , newpref_softwareTags
-                        );
+                appPreferences.setInfrastructure(currInfra-1,
+                		newpref_enableInfrastructure,
+                        newpref_nameInfrastructure,
+                        newpref_acronymInfrastructure,
+                        newpref_bdiiHost,
+                        newpref_wmsHosts,
+                        newpref_pxServerHost,
+                        newpref_pxServerPort,
+                        newpref_pxServerSecure,
+                        newpref_pxRobotId,
+                        newpref_pxRobotVO,
+                        newpref_pxRobotRole,
+                        newpref_pxRobotRenewalFlag,
+                        newpref_pxUserProxy,
+                        newpref_softwareTags);
             } // newCurrInfra >= currInfra
+            
             // Show preference value changes
-            _log.info(
-                    LS+"variable name          : 'Old Value' -> 'New value'"
-                +LS+"---------------------------------------------------"                      
-                +LS+"pref_logLevel          : '"+appPreferences.getLogLevel          ()+"' -> '"+newpref_logLevel       +"'"
-                +LS+"pref_gridOperationId   : '"+appPreferences.getGridOperationId   ()+"' -> '"+newpref_gridOperationId+"'"
-                +LS+"pref_numInfrastructures: '"+appPreferences.getNumInfrastructures()+"' -> '"+numInfrastructures     +"'"
-                +LS+infrastructuresInformations                                                    
-                +LS+"pref_jobRequirements   : '"+appPreferences.getJobRequirements   ()+"' -> '"+newpref_jobRequirements+"'"
-                +LS+"pref_pilotScript       : '"+appPreferences.getPilotScript       ()+"' -> '"+newpref_pilotScript    +"'"                
-                +LS);
+            _log.info(LS + "variable name          : 'Old Value' -> 'New value'" + LS + 
+                "---------------------------------------------------" + LS +           
+                "pref_logLevel          : '" + appPreferences.getLogLevel() + "' -> '" + newpref_logLevel + "'" + LS +
+                "pref_gridOperationId   : '" + appPreferences.getGridOperationId() + "' -> '" + newpref_gridOperationId + "'" + LS +
+                "pref_numInfrastructures: '" + appPreferences.getNumInfrastructures() + "' -> '" + numInfrastructures + "'" + LS +
+                infrastructuresInformations + LS +
+                "pref_jobRequirements   : '" + appPreferences.getJobRequirements() + "' -> '" + newpref_jobRequirements + "'" + LS +
+                "pref_pilotScript       : '" + appPreferences.getPilotScript() + "' -> '" + newpref_pilotScript + "'" + LS);
 
             // Assign the new variable to the preference object
-            appPreferences.setLogLevel       (       newpref_logLevel);
-            appPreferences.setGridOperationId(newpref_gridOperationId);
-            appPreferences.setJobRequirements(newpref_jobRequirements);
-            appPreferences.setPilotScript    (    newpref_pilotScript);                                   
+			appPreferences.setLogLevel(newpref_logLevel);
+			appPreferences.setGridOperationId(newpref_gridOperationId);
+			appPreferences.setJobRequirements(newpref_jobRequirements);
+			appPreferences.setPilotScript(newpref_pilotScript);  
+			
             // Store new preferences
             storePreferences(request);
         } // EDIT Mode
@@ -573,7 +569,7 @@ public class andrea_portlet extends GenericPortlet {
         //----------
         else {
             // Unsupported portlet modes come here
-            _log.warn("Custom portlet mode: '"+mode.toString()+"'");
+            _log.warn("Custom portlet mode: '" + mode.toString() + "'");
         } // CUSTOM Mode                               
     } // processAction
     
@@ -589,24 +585,22 @@ public class andrea_portlet extends GenericPortlet {
      * @throws IOException 
      */
     @Override
-    protected void doView(RenderRequest request, RenderResponse response) 
-    throws PortletException, IOException 
-    {
+    protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         _log.info("calling doView ...");    
         response.setContentType("text/html");
         
         // Get current preference values
-        getPreferences(null,request);
-        gridOperationId=Integer.parseInt(appPreferences.getGridOperationId());
-        _log.info("GridOperationId: '"+gridOperationId+"'");
+        getPreferences(null, request);
+        gridOperationId = Integer.parseInt(appPreferences.getGridOperationId());
+        _log.info("GridOperationId: '" + gridOperationId + "'");
         // currentView comes from the processAction; unless such method
         // is not called before (example: page shown with no user action)
         // In case the application is not yet register (gridOperationId<0)
         // the VIEW_INITIALIZE pane will be enforced otherwise the
         // VIEW_INPUT will be selected as default view
-        String currentView=request.getParameter("PortletStatus");
-        if(currentView==null) currentView="VIEW_INPUT";
-        if(gridOperationId<0) currentView="VIEW_ACTIVATE";                
+        String currentView = request.getParameter("PortletStatus");
+        if (currentView == null) currentView = "VIEW_INPUT";
+        if (gridOperationId < 0) currentView = "VIEW_ACTIVATE";                
         
         // Different actions will be performed accordingly to the
         // different possible view modes
@@ -658,7 +652,7 @@ public class andrea_portlet extends GenericPortlet {
             break;
             case VIEW_INPUT: {
                 _log.info("VIEW_INPUT Selected ...");
-                PortletRequestDispatcher dispatcher=getPortletContext().getRequestDispatcher("/input.jsp");
+                PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher("/input.jsp");
                 dispatcher.include(request, response);
             }
             break; 
@@ -674,7 +668,7 @@ public class andrea_portlet extends GenericPortlet {
                 _log.info("VIEW_SUBMIT Selected ...");    
                 String jobIdentifier = request.getParameter("jobIdentifier");
                 request.setAttribute("jobIdentifier", jobIdentifier);                                                    
-                PortletRequestDispatcher dispatcher=getPortletContext().getRequestDispatcher("/submit.jsp");
+                PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher("/submit.jsp");
                 dispatcher.include(request, response);
             }
             break;
@@ -698,51 +692,50 @@ public class andrea_portlet extends GenericPortlet {
      * 
      */
     @Override
-    public void doEdit(RenderRequest request,RenderResponse response)
-    throws PortletException,IOException {
+    public void doEdit(RenderRequest request,RenderResponse response) throws PortletException,IOException {
         response.setContentType("text/html");
         _log.info("Calling doEdit ...");
         
         // Get current preference values
-        getPreferences(null,request);
+        getPreferences(null, request);
         
         // Get the current infrastructure and the number of infrastructure
-        int currInfra         =appPreferences.getCurrPaneInfrastructure();
-        int numInfrastructures=appPreferences.getNumInfrastructures();
+        int currInfra = appPreferences.getCurrPaneInfrastructure();
+        int numInfrastructures = appPreferences.getNumInfrastructures();
 
         // ActionURL and the current preference value will be passed to the edit.jsp
         PortletURL pref_actionURL = response.createActionURL();
-        request.setAttribute("pref_actionURL",pref_actionURL.toString());        
+        request.setAttribute("pref_actionURL", pref_actionURL.toString());        
         
         // Send preference values
-        request.setAttribute("pref_logLevel"          ,""+appPreferences.getLogLevel              ());        
-        request.setAttribute("pref_numInfrastructures",""+appPreferences.getNumInfrastructures    ()); 
-        request.setAttribute("pref_currInfrastructure",""+appPreferences.getCurrPaneInfrastructure());
-        request.setAttribute("pref_gridOperationId"   ,""+appPreferences.getGridOperationId       ());
-        request.setAttribute("pref_gridOperationDesc" ,""+appPreferences.getGridOperationDesc     ());
+		request.setAttribute("pref_logLevel", appPreferences.getLogLevel());
+		request.setAttribute("pref_numInfrastructures", appPreferences.getNumInfrastructures());
+		request.setAttribute("pref_currInfrastructure", appPreferences.getCurrPaneInfrastructure());
+		request.setAttribute("pref_gridOperationId", appPreferences.getGridOperationId());
+		request.setAttribute("pref_gridOperationDesc", appPreferences.getGridOperationDesc());
         // Send Infrastructure specific data        
-        if(   0<= currInfra
-           &&     currInfra <= numInfrastructures) {            
-          request.setAttribute("pref_enableInfrastructure" ,appPreferences.getEnableInfrastructure (currInfra-1));
-          request.setAttribute("pref_nameInfrastructure"   ,appPreferences.getNameInfrastructure   (currInfra-1));
-          request.setAttribute("pref_acronymInfrastructure",appPreferences.getAcronymInfrastructure(currInfra-1));
-          request.setAttribute("pref_bdiiHost"             ,appPreferences.getBdiiHost             (currInfra-1));
-          request.setAttribute("pref_wmsHosts"             ,appPreferences.getWmsHosts             (currInfra-1));
-          request.setAttribute("pref_pxServerHost"         ,appPreferences.getPxServerHost         (currInfra-1));
-          request.setAttribute("pref_pxServerPort"         ,appPreferences.getPxServerPort         (currInfra-1));
-          request.setAttribute("pref_pxServerSecure"       ,appPreferences.getPxServerSecure       (currInfra-1));
-          request.setAttribute("pref_pxRobotId"            ,appPreferences.getPxRobotId            (currInfra-1));
-          request.setAttribute("pref_pxRobotVO"            ,appPreferences.getPxRobotVO            (currInfra-1));
-          request.setAttribute("pref_pxRobotRole"          ,appPreferences.getPxRobotRole          (currInfra-1));
-          request.setAttribute("pref_pxRobotRenewalFlag"   ,appPreferences.getPxRobotRenewalFlag   (currInfra-1));
-          request.setAttribute("pref_pxUserProxy"          ,appPreferences.getPxUserProxy          (currInfra-1));
-          request.setAttribute("pref_softwareTags"         ,appPreferences.getSoftwareTags         (currInfra-1));
+        if (0 <= currInfra && currInfra <= numInfrastructures) {            
+          request.setAttribute("pref_enableInfrastructure", appPreferences.getEnableInfrastructure(currInfra-1));
+          request.setAttribute("pref_nameInfrastructure", appPreferences.getNameInfrastructure(currInfra-1));
+          request.setAttribute("pref_acronymInfrastructure", appPreferences.getAcronymInfrastructure(currInfra-1));
+          request.setAttribute("pref_bdiiHost", appPreferences.getBdiiHost(currInfra-1));
+          request.setAttribute("pref_wmsHosts", appPreferences.getWmsHosts(currInfra-1));
+          request.setAttribute("pref_pxServerHost", appPreferences.getPxServerHost(currInfra-1));
+          request.setAttribute("pref_pxServerPort", appPreferences.getPxServerPort(currInfra-1));
+          request.setAttribute("pref_pxServerSecure", appPreferences.getPxServerSecure(currInfra-1));
+          request.setAttribute("pref_pxRobotId", appPreferences.getPxRobotId(currInfra-1));
+          request.setAttribute("pref_pxRobotVO", appPreferences.getPxRobotVO(currInfra-1));
+          request.setAttribute("pref_pxRobotRole", appPreferences.getPxRobotRole(currInfra-1));
+          request.setAttribute("pref_pxRobotRenewalFlag", appPreferences.getPxRobotRenewalFlag(currInfra-1));
+          request.setAttribute("pref_pxUserProxy", appPreferences.getPxUserProxy(currInfra-1));
+          request.setAttribute("pref_softwareTags", appPreferences.getSoftwareTags(currInfra-1));
         } // if paneInfrastructure > 0
-        request.setAttribute("pref_jobRequirements"   ,appPreferences.getJobRequirements());
-        request.setAttribute("pref_pilotScript"       ,appPreferences.getPilotScript    ());
+        
+        request.setAttribute("pref_jobRequirements", appPreferences.getJobRequirements());
+        request.setAttribute("pref_pilotScript", appPreferences.getPilotScript());
                      
         // The edit.jsp will be the responsible to show/edit the current preference values
-        PortletRequestDispatcher dispatcher=getPortletContext().getRequestDispatcher("/edit.jsp");
+        PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher("/edit.jsp");
         dispatcher.include(request, response);
     } // doEdit
 
@@ -757,12 +750,11 @@ public class andrea_portlet extends GenericPortlet {
      * @throws IOException 
      */
     @Override
-    public void doHelp(RenderRequest request, RenderResponse response)
-    throws PortletException,IOException {
+    public void doHelp(RenderRequest request, RenderResponse response) throws PortletException, IOException {
         _log.info("Calling doHelp ...");
         response.setContentType("text/html");
         request.setAttribute("portletVersion",appPreferences.getPortletVersion()); 
-        PortletRequestDispatcher dispatcher=getPortletContext().getRequestDispatcher("/help.jsp");
+        PortletRequestDispatcher dispatcher = getPortletContext().getRequestDispatcher("/help.jsp");
         dispatcher.include(request, response);
     } // doHelp
     
@@ -790,11 +782,11 @@ public class andrea_portlet extends GenericPortlet {
                                         , RenderRequest renderRequest) {        
         PortletPreferences portletPreferences;
         String prefOperationId="";
-        if(null != actionRequest) {
+        if (null != actionRequest) {
             portletPreferences= actionRequest.getPreferences();
             prefOperationId   = portletPreferences.getValue("pref_gridOperationId","-1");
         }
-        if(null != renderRequest) {
+        if (null != renderRequest) {
             portletPreferences= renderRequest.getPreferences();
             prefOperationId   = portletPreferences.getValue("pref_gridOperationId","-1");
         }
@@ -810,100 +802,97 @@ public class andrea_portlet extends GenericPortlet {
      * @throws PortletException
      * @throws IOException 
      */
-    void storePreferences(ActionRequest request)
-    throws PortletException, IOException{
+    void storePreferences(ActionRequest request) throws PortletException, IOException {
         _log.info("Calling storePreferences ...");
         // Stored preference content
-        String storedPrefs="Stored preferences:"
-                       +LS+"-------------------"
-                       +LS;
+        String storedPrefs = "Stored preferences:" + LS + "-------------------" + LS;
+
         // The code below stores all the portlet preference values
         PortletPreferences prefs = request.getPreferences();
-        if(prefs!=null) {            
-            String logLevel              =appPreferences.getLogLevel              ();
-            String gridOperationId       =appPreferences.getGridOperationId       ();
-            int    numInfrastructures    =appPreferences.getNumInfrastructures    ();
-            int    currPaneInfrastructure=appPreferences.getCurrPaneInfrastructure();   
-            String gridOperationDesc     =appPreferences.getGridOperationDesc     ();
-            prefs.setValue("pref_logLevel"          , ""+logLevel              );            
-            prefs.setValue("pref_gridOperationId"   , ""+gridOperationId       );
-            prefs.setValue("pref_gridOperationDesc" , ""+gridOperationDesc     );
-            prefs.setValue("pref_numInfrastructures", ""+numInfrastructures    ); 
-            prefs.setValue("pref_currInfrastructure", ""+currPaneInfrastructure);                        
-            storedPrefs+="pref_logLevel           : '"+logLevel              +"'"
-                     +LS+"pref_gridOperationId    : '"+gridOperationId       +"'"
-                     +LS+"pref_gridOperationDesc  : '"+gridOperationDesc     +"'"
-                     +LS+"pref_numInfrastructures : '"+numInfrastructures    +"'"
-                     +LS+"pref_currInfrastructure : '"+currPaneInfrastructure+"'"
-                     +LS;            
+        if (prefs != null) {            
+            String logLevel = appPreferences.getLogLevel();
+            String gridOperationId = appPreferences.getGridOperationId();
+            int numInfrastructures = appPreferences.getNumInfrastructures();
+            int currPaneInfrastructure = appPreferences.getCurrPaneInfrastructure();   
+            String gridOperationDesc = appPreferences.getGridOperationDesc();
+            
+            prefs.setValue("pref_logLevel", logLevel);            
+            prefs.setValue("pref_gridOperationId", gridOperationId);
+            prefs.setValue("pref_gridOperationDesc", gridOperationDesc);
+            prefs.setValue("pref_numInfrastructures", Integer.toString(numInfrastructures)); 
+            prefs.setValue("pref_currInfrastructure", Integer.toString(currPaneInfrastructure));                        
+            
+            storedPrefs += "pref_logLevel           : '" + logLevel + "'" + LS +
+            		       "pref_gridOperationId    : '" + gridOperationId + "'" + LS +
+                           "pref_gridOperationDesc  : '" + gridOperationDesc + "'" + LS +
+                           "pref_numInfrastructures : '" + numInfrastructures + "'" + LS +
+                           "pref_currInfrastructure : '" + currPaneInfrastructure + "'" + LS;
+            
             // For each preference infrastructure
-            for(int i=0; i<numInfrastructures; i++) {                
-                int j=i+1;                      
-                storedPrefs=LS+"Infrastructure #"+j
-                           +LS+"--------------------"
-                           +LS;                                
-                String enableInfrastructure =appPreferences.getEnableInfrastructure (i);
-                String nameInfrastructure   =appPreferences.getNameInfrastructure   (i);
-                String acronymInfrastructure=appPreferences.getAcronymInfrastructure(i);
-                String bdiiHost             =appPreferences.getBdiiHost             (i);
-                String wmsHost              =appPreferences.getWmsHosts             (i);
-                String pxServerHost         =appPreferences.getPxServerHost         (i);
-                String pxServerPort         =appPreferences.getPxServerPort         (i);
-                String pxServerSecure       =appPreferences.getPxServerSecure       (i);
-                String pxRobotId            =appPreferences.getPxRobotId            (i);
-                String pxRobotVO            =appPreferences.getPxRobotVO            (i);
-                String pxRobotRole          =appPreferences.getPxRobotRole          (i);
-                String pxRobotRenewalFlag   =appPreferences.getPxRobotRenewalFlag   (i);
-                String pxUserProxy          =appPreferences.getPxUserProxy          (i);
-                String softwareTags         =appPreferences.getSoftwareTags         (i);
+            for(int i = 0; i < numInfrastructures; i++) {                
+                int j = i+1;                      
+                storedPrefs = LS + "Infrastructure #" + j + LS + "--------------------" + LS;                                
+                
+                String enableInfrastructure = appPreferences.getEnableInfrastructure(i);
+                String nameInfrastructure = appPreferences.getNameInfrastructure(i);
+                String acronymInfrastructure = appPreferences.getAcronymInfrastructure(i);
+                String bdiiHost = appPreferences.getBdiiHost(i);
+                String wmsHost = appPreferences.getWmsHosts(i);
+                String pxServerHost = appPreferences.getPxServerHost(i);
+                String pxServerPort = appPreferences.getPxServerPort(i);
+                String pxServerSecure = appPreferences.getPxServerSecure(i);
+                String pxRobotId = appPreferences.getPxRobotId(i);
+                String pxRobotVO = appPreferences.getPxRobotVO(i);
+                String pxRobotRole = appPreferences.getPxRobotRole(i);
+                String pxRobotRenewalFlag = appPreferences.getPxRobotRenewalFlag(i);
+                String pxUserProxy = appPreferences.getPxUserProxy(i);
+                String softwareTags = appPreferences.getSoftwareTags(i);
+
                 // Set preference values
-                prefs.setValue("pref_"+j+"_enableInfrastructure" ,enableInfrastructure );
-                prefs.setValue("pref_"+j+"_nameInfrastructure"   ,nameInfrastructure   );
-                prefs.setValue("pref_"+j+"_acronymInfrastructure",acronymInfrastructure);
-                prefs.setValue("pref_"+j+"_bdiiHost"             ,bdiiHost             );
-                prefs.setValue("pref_"+j+"_wmsHosts"             ,wmsHost              );
-                prefs.setValue("pref_"+j+"_pxServerHost"         ,pxServerHost         );
-                prefs.setValue("pref_"+j+"_pxServerPort"         ,pxServerPort         );
-                prefs.setValue("pref_"+j+"_pxServerSecure"       ,pxServerSecure       );                
-                prefs.setValue("pref_"+j+"_pxRobotId"            ,pxRobotId            );
-                prefs.setValue("pref_"+j+"_pxRobotVO"            ,pxRobotVO            );
-                prefs.setValue("pref_"+j+"_pxRobotRole"          ,pxRobotRole          );
-                prefs.setValue("pref_"+j+"_pxRobotRenewalFlag"   ,pxRobotRenewalFlag   );
-                prefs.setValue("pref_"+j+"_pxUserProxy"          ,pxUserProxy          );
-                prefs.setValue("pref_"+j+"_softwareTags"         ,softwareTags         );
+                prefs.setValue("pref_" + j + "_enableInfrastructure", enableInfrastructure);
+                prefs.setValue("pref_" + j + "_nameInfrastructure", nameInfrastructure);
+                prefs.setValue("pref_" + j + "_acronymInfrastructure", acronymInfrastructure);
+                prefs.setValue("pref_" + j + "_bdiiHost", bdiiHost);
+                prefs.setValue("pref_" + j + "_wmsHosts", wmsHost);
+                prefs.setValue("pref_" + j + "_pxServerHost", pxServerHost);
+                prefs.setValue("pref_" + j + "_pxServerPort", pxServerPort);
+                prefs.setValue("pref_" + j + "_pxServerSecure", pxServerSecure);                
+                prefs.setValue("pref_" + j + "_pxRobotId", pxRobotId);
+                prefs.setValue("pref_" + j + "_pxRobotVO", pxRobotVO);
+                prefs.setValue("pref_" + j + "_pxRobotRole", pxRobotRole);
+                prefs.setValue("pref_" + j + "_pxRobotRenewalFlag", pxRobotRenewalFlag);
+                prefs.setValue("pref_" + j + "_pxUserProxy", pxUserProxy);
+                prefs.setValue("pref_" + j + "_softwareTags", softwareTags);
+                
                 // Dumps the infrastructure preferences
-                storedPrefs+=  "  pref_"+j+"_enableInfrastructure : '"+enableInfrastructure +"'"
-                           +LS+"  pref_"+j+"_nameInfrastructure   : '"+nameInfrastructure   +"'"
-                           +LS+"  pref_"+j+"_acronymInfrastructure: '"+acronymInfrastructure+"'"
-                           +LS+"  pref_"+j+"_bdiiHost             : '"+bdiiHost             +"'"
-                           +LS+"  pref_"+j+"_wmsHosts             : '"+wmsHost              +"'"              
-                           +LS+"  pref_"+j+"_pxServerHost         : '"+pxServerHost         +"'"   
-                           +LS+"  pref_"+j+"_pxServerPort         : '"+pxServerPort         +"'"   
-                           +LS+"  pref_"+j+"_pxServerSecure       : '"+pxServerSecure       +"'"   
-                           +LS+"  pref_"+j+"_pxRobotId            : '"+pxRobotId            +"'"  
-                           +LS+"  pref_"+j+"_pxRobotVO            : '"+pxRobotVO            +"'"   
-                           +LS+"  pref_"+j+"_pxRobotRole          : '"+pxRobotRole          +"'"  
-                           +LS+"  pref_"+j+"_pxRobotRenewalFlag   : '"+pxRobotRenewalFlag   +"'"  
-                           +LS+"  pref_"+j+"_pxUserProxy          : '"+pxUserProxy          +"'"    
-                           +LS+"  pref_"+j+"_softwareTags         : '"+softwareTags         +"'"
-                           +LS;                       
+                storedPrefs += "  pref_" + j + "_enableInfrastructure : '" + enableInfrastructure + "'" + LS +
+                               "  pref_" + j + "_nameInfrastructure   : '" + nameInfrastructure + "'" + LS +
+                               "  pref_" + j + "_acronymInfrastructure: '" + acronymInfrastructure + "'" + LS +
+                               "  pref_" + j + "_bdiiHost             : '" + bdiiHost + "'" + LS +
+                               "  pref_" + j + "_wmsHosts             : '" + wmsHost + "'" + LS +       
+                               "  pref_" + j + "_pxServerHost         : '" + pxServerHost + "'" + LS +
+                               "  pref_" + j + "_pxServerPort         : '" + pxServerPort + "'" + LS +
+                               "  pref_" + j + "_pxServerSecure       : '" + pxServerSecure + "'" + LS +
+                               "  pref_" + j + "_pxRobotId            : '" + pxRobotId + "'" + LS +
+                               "  pref_" + j + "_pxRobotVO            : '" + pxRobotVO + "'" + LS +
+                               "  pref_" + j + "_pxRobotRole          : '" + pxRobotRole + "'" + LS +
+                               "  pref_" + j + "_pxRobotRenewalFlag   : '" + pxRobotRenewalFlag + "'" + LS +
+                               "  pref_" + j + "_pxUserProxy          : '" + pxUserProxy + "'" + LS +
+                               "  pref_" + j + "_softwareTags         : '" + softwareTags + "'" + LS;
             } // for each preference infrastructure                   
-            String jobRequirements=appInitPreferences.getJobRequirements();
-            String pilotScript    =appInitPreferences.getPilotScript    ();            
+            
+            String jobRequirements = appInitPreferences.getJobRequirements();
+            String pilotScript = appInitPreferences.getPilotScript();            
             prefs.setValue("pref_jobRequirements", jobRequirements);
-            prefs.setValue("pref_pilotScript"    , pilotScript    );
-            storedPrefs+=  "pref_jobRequirements: '"+jobRequirements+"'"
-                       +LS+"pref_pilotScript    : '"+pilotScript    +"'"
-                       +LS;            
+            prefs.setValue("pref_pilotScript", pilotScript);
+            storedPrefs += "pref_jobRequirements: '" + jobRequirements + "'" + LS +
+            		"pref_pilotScript    : '" + pilotScript + "'" + LS;            
             // Store preferences
             prefs.store();
         } // pref !=null
         
         // Show saved preferences
-        _log.info("Stored preferences"
-              +LS+"------------------"
-              +storedPrefs
-              +LS);
+        _log.info("Stored preferences" + LS + "------------------" + storedPrefs + LS);
               
     } // storePreferences     
     
@@ -918,53 +907,48 @@ public class andrea_portlet extends GenericPortlet {
      * @param renderRequest a RenderRequest instance
      *
      */
-    private void getPreferences( ActionRequest actionRequest
-                                ,RenderRequest renderRequest) {  
+    private void getPreferences(ActionRequest actionRequest, RenderRequest renderRequest) {  
         _log.info("Calling: getPreferences ...");
-        PortletPreferences prefs=null;
+        PortletPreferences prefs = null;
         
-        if(null!=actionRequest)
-            prefs = actionRequest.getPreferences(); 
-        else if(null != renderRequest)
-            prefs = renderRequest.getPreferences();         
+        if (null!=actionRequest) prefs = actionRequest.getPreferences(); 
+        else if (null != renderRequest) prefs = renderRequest.getPreferences();         
         else _log.warn("Both render request and action request are null");
             
         if (null != prefs) {              
-            appPreferences.updateValue(          "logLevel",""+prefs.getValue(          "pref_logLevel",   appInitPreferences.getLogLevel          ()));
-            appPreferences.updateValue(   "gridOperationId",""+prefs.getValue(   "pref_gridOperationId",   appInitPreferences.getGridOperationId   ()));
-            appPreferences.updateValue( "gridOperationDesc",""+prefs.getValue( "pref_gridOperationDesc",   appInitPreferences.getGridOperationDesc ()));
-            appPreferences.updateValue("numInfrastructures",""+prefs.getValue("pref_numInfrastructures",""+appInitPreferences.getNumInfrastructures()));            
+            appPreferences.updateValue("logLevel", prefs.getValue("pref_logLevel", appInitPreferences.getLogLevel()));
+            appPreferences.updateValue("gridOperationId", prefs.getValue("pref_gridOperationId", appInitPreferences.getGridOperationId()));
+            appPreferences.updateValue("gridOperationDesc", prefs.getValue("pref_gridOperationDesc", appInitPreferences.getGridOperationDesc()));
+            appPreferences.updateValue("numInfrastructures", prefs.getValue("pref_numInfrastructures", Integer.toString(appInitPreferences.getNumInfrastructures())));            
             
             // Now retrieves the infrastructures information
-            int numInfras=appPreferences.getNumInfrastructures(); 
-            _log.info("getpref: num infra="+numInfras);
+            int numInfras = appPreferences.getNumInfrastructures(); 
+            _log.info("getpref: num infra=" + numInfras);
             
             // For each infrastructure ...
             // The preference name is indexed with the infrastructure number: 1,2,...
-            String infrastructuresInfrormations="";
-            for(int i=0; i<numInfras; i++) {
-                int j=i+1;         
-                int k=appInitPreferences.getNumInfrastructures();
-                appPreferences.updateInfrastructureValue(i, "enableInfrastructure",""+prefs.getValue("pref_"+j+ "_enableInfrastructure",(i<k)?appInitPreferences.getEnableInfrastructure (i):""));
-                appPreferences.updateInfrastructureValue(i,   "nameInfrastructure",""+prefs.getValue("pref_"+j+   "_nameInfrastructure",(i<k)?appInitPreferences.getNameInfrastructure   (i):""));
-                appPreferences.updateInfrastructureValue(i,"acronymInfrastructure",""+prefs.getValue("pref_"+j+"_acronymInfrastructure",(i<k)?appInitPreferences.getAcronymInfrastructure(i):""));
-                appPreferences.updateInfrastructureValue(i,             "bdiiHost",""+prefs.getValue("pref_"+j+             "_bdiiHost",(i<k)?appInitPreferences.getBdiiHost             (i):""));
-                appPreferences.updateInfrastructureValue(i,             "wmsHosts",""+prefs.getValue("pref_"+j+             "_wmsHosts",(i<k)?appInitPreferences.getWmsHosts             (i):""));                
-                appPreferences.updateInfrastructureValue(i,         "pxServerHost",""+prefs.getValue("pref_"+j+         "_pxServerHost",(i<k)?appInitPreferences.getPxServerHost         (i):""));                
-                appPreferences.updateInfrastructureValue(i,         "pxServerPort",""+prefs.getValue("pref_"+j+         "_pxServerPort",(i<k)?appInitPreferences.getPxServerPort         (i):""));
-                appPreferences.updateInfrastructureValue(i,       "pxServerSecure",""+prefs.getValue("pref_"+j+       "_pxServerSecure",(i<k)?appInitPreferences.getPxServerSecure       (i):""));
-                appPreferences.updateInfrastructureValue(i,            "pxRobotId",""+prefs.getValue("pref_"+j+            "_pxRobotId",(i<k)?appInitPreferences.getPxRobotId            (i):""));
-                appPreferences.updateInfrastructureValue(i,            "pxRobotVO",""+prefs.getValue("pref_"+j+            "_pxRobotVO",(i<k)?appInitPreferences.getPxRobotVO            (i):""));
-                appPreferences.updateInfrastructureValue(i,          "pxRobotRole",""+prefs.getValue("pref_"+j+          "_pxRobotRole",(i<k)?appInitPreferences.getPxRobotRole          (i):""));
-                appPreferences.updateInfrastructureValue(i,   "pxRobotRenewalFlag",""+prefs.getValue("pref_"+j+   "_pxRobotRenewalFlag",(i<k)?appInitPreferences.getPxRobotRenewalFlag   (i):""));
-                appPreferences.updateInfrastructureValue(i,          "pxUserProxy",""+prefs.getValue("pref_"+j+          "_pxUserProxy",(i<k)?appInitPreferences.getPxUserProxy          (i):""));
-                appPreferences.updateInfrastructureValue(i,         "softwareTags",""+prefs.getValue("pref_"+j+         "_softwareTags",(i<k)?appInitPreferences.getSoftwareTags         (i):""));
-                _log.info("dump: "
-                       +LS+appPreferences.dumpInfrastructure(i));
+            for(int i = 0; i < numInfras; i++) {
+                int j = i+1;         
+                int k = appInitPreferences.getNumInfrastructures();
+                appPreferences.updateInfrastructureValue(i, "enableInfrastructure", prefs.getValue("pref_" + j + "_enableInfrastructure", (i < k) ? appInitPreferences.getEnableInfrastructure(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "nameInfrastructure", prefs.getValue("pref_" + j + "_nameInfrastructure", (i < k) ? appInitPreferences.getNameInfrastructure(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "acronymInfrastructure", prefs.getValue("pref_" + j + "_acronymInfrastructure", (i < k) ? appInitPreferences.getAcronymInfrastructure(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "bdiiHost", prefs.getValue("pref_" + j + "_bdiiHost", (i < k) ? appInitPreferences.getBdiiHost(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "wmsHosts", prefs.getValue("pref_" + j + "_wmsHosts", (i < k) ? appInitPreferences.getWmsHosts(i) : ""));                
+                appPreferences.updateInfrastructureValue(i, "pxServerHost", prefs.getValue("pref_" + j + "_pxServerHost", (i < k) ? appInitPreferences.getPxServerHost(i) : ""));                
+                appPreferences.updateInfrastructureValue(i, "pxServerPort", prefs.getValue("pref_" + j + "_pxServerPort", (i < k) ? appInitPreferences.getPxServerPort(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "pxServerSecure", prefs.getValue("pref_" + j + "_pxServerSecure", (i < k) ? appInitPreferences.getPxServerSecure(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "pxRobotId", prefs.getValue("pref_" + j + "_pxRobotId", (i < k) ? appInitPreferences.getPxRobotId(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "pxRobotVO", prefs.getValue("pref_" + j + "_pxRobotVO", (i < k) ? appInitPreferences.getPxRobotVO(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "pxRobotRole", prefs.getValue("pref_" + j + "_pxRobotRole", (i < k) ? appInitPreferences.getPxRobotRole(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "pxRobotRenewalFlag", prefs.getValue("pref_" + j + "_pxRobotRenewalFlag", (i < k) ? appInitPreferences.getPxRobotRenewalFlag(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "pxUserProxy", prefs.getValue("pref_" + j + "_pxUserProxy", (i < k) ? appInitPreferences.getPxUserProxy(i) : ""));
+                appPreferences.updateInfrastructureValue(i, "softwareTags", prefs.getValue("pref_" + j + "_softwareTags", (i < k) ? appInitPreferences.getSoftwareTags(i) : ""));
+                _log.info("dump: " + LS + appPreferences.dumpInfrastructure(i));
             } // for each Infrastructure                           
             
-            appPreferences.updateValue("jobRequirements",""+prefs.getValue("pref_jobRequirements",appInitPreferences.getJobRequirements()));
-            appPreferences.updateValue(    "pilotScript",""+prefs.getValue(    "pref_pilotScript",appInitPreferences.getPilotScript    ()));
+            appPreferences.updateValue("jobRequirements", prefs.getValue("pref_jobRequirements",appInitPreferences.getJobRequirements()));
+            appPreferences.updateValue("pilotScript", prefs.getValue("pref_pilotScript",appInitPreferences.getPilotScript()));
             
             // Assigns the log level      
             _log.setLogLevel(appPreferences.getLogLevel());
@@ -983,10 +967,10 @@ public class andrea_portlet extends GenericPortlet {
      * @throws IOException 
      */
     private String updateString(String file) throws IOException {
-        String line;
+        String line = null;
         StringBuilder stringBuilder = new StringBuilder();            
-        BufferedReader reader = new BufferedReader( new FileReader (file));                
-        while((line = reader.readLine()) != null ) {
+        BufferedReader reader = new BufferedReader(new FileReader(file));                
+        while((line = reader.readLine()) != null) {
             stringBuilder.append(line);
             stringBuilder.append(LS);
         }                        
@@ -1013,9 +997,9 @@ public class andrea_portlet extends GenericPortlet {
      * @see getInputForm
      */
     private enum inputControlsIds {
-        file_inputFile    // Input file textarea 
-       ,inputFile         // Input file input file
-       ,JobIdentifier     // User defined Job identifier
+       file_inputFile,    // Input file textarea 
+       inputFile,         // Input file input file
+       JobIdentifier      // User defined Job identifier
     };
     /**
      * This method manages the user input fields managing two cases 
@@ -1030,11 +1014,12 @@ public class andrea_portlet extends GenericPortlet {
      * @param request   ActionRequest instance (processAction)
      * @param appInput  AppInput instance storing the jobSubmission data
      */
-    void getInputForm(ActionRequest request,AppInput appInput) {
+    @SuppressWarnings("rawtypes")
+	void getInputForm(ActionRequest request,AppInput appInput) {
     if (PortletFileUpload.isMultipartContent(request))
         try {                
             FileItemFactory factory = new DiskFileItemFactory();
-            PortletFileUpload upload = new PortletFileUpload( factory );
+            PortletFileUpload upload = new PortletFileUpload(factory);
             List items = upload.parseRequest(request);
             File repositoryPath = new File("/tmp");
             DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
@@ -1042,54 +1027,48 @@ public class andrea_portlet extends GenericPortlet {
             Iterator iter = items.iterator();
             String logstring="";
             while (iter.hasNext()) {
-                FileItem item = (FileItem)iter.next();
-                String   fieldName  =item.getFieldName();
-                String   fileName   =item.getName();
-                String   contentType=item.getContentType();
-                boolean  isInMemory =item.isInMemory();
-                long     sizeInBytes=item.getSize();
+                FileItem item = (FileItem) iter.next();
+                String fieldName = item.getFieldName();
+                //String fileName = item.getName();
+                //String contentType = item.getContentType();
+                //boolean isInMemory = item.isInMemory();
+                //long sizeInBytes = item.getSize();
                 // Prepare a log string with field list
-                logstring+=LS+"field name: '"+fieldName+"' - '"+item.getString()+"'";
+                logstring += LS + "field name: '" + fieldName + "' - '" + item.getString() + "'";
                 switch(inputControlsIds.valueOf(fieldName)) {
                     case file_inputFile:
-                        appInput.inputFileName=item.getString();
-                        processInputFile(item,appInput);
+                        appInput.inputFileName = item.getString();
+                        processInputFile(item, appInput);
                     break;
                     case inputFile:
-                        appInput.inputFileText=item.getString();
+                        appInput.inputFileText = item.getString();
                     break;
                     case JobIdentifier:
-                        appInput.jobIdentifier=item.getString();
+                        appInput.jobIdentifier = item.getString();
                     break;
                     default:
-                        _log.warn("Unhandled input field: '"+fieldName+"' - '"+item.getString()+"'");
+                        _log.warn("Unhandled input field: '" + fieldName + "' - '" + item.getString() + "'");
                 } // switch fieldName                                                   
             } // while iter.hasNext()   
-            _log.info(
-                   LS+"Reporting"
-                  +LS+"---------"
-                  +LS+logstring
-                  +LS);
+            _log.info(LS + "Reporting" + LS + "---------" + LS + logstring + LS);
         } // try
         catch (Exception e) {
-            _log.info("Caught exception while processing files to upload: '"+e.toString()+"'");
+            _log.info("Caught exception while processing files to upload: '" + e.toString() + "'");
         }
         // The input form do not use the "multipart/form-data" 
         else  {                
             // Retrieve from the input form the given application values
-            appInput.inputFileName=(String)request.getParameter("file_inputFile");
-            appInput.inputFileText=(String)request.getParameter("inputFile");
-            appInput.jobIdentifier=(String)request.getParameter("JobIdentifier");
+            appInput.inputFileName = (String) request.getParameter("file_inputFile");
+            appInput.inputFileText = (String) request.getParameter("inputFile");
+            appInput.jobIdentifier = (String) request.getParameter("JobIdentifier");
         } // ! isMultipartContent
         
         // Show into the log the taken inputs
-        _log.info(
-               LS+"Taken input parameters:"
-              +LS+"-----------------------"
-              +LS+"inputFileName: '"+appInput.inputFileName+"'"
-              +LS+"inputFileText: '"+appInput.inputFileText+"'"
-              +LS+"jobIdentifier: '"+appInput.jobIdentifier+"'"
-              +LS);    
+        _log.info(LS + "Taken input parameters:" + LS + 
+        		  "-----------------------" + LS + 
+        		  "inputFileName: '" + appInput.inputFileName + "'" + LS + 
+        		  "inputFileText: '" + appInput.inputFileText + "'" + LS +
+                  "jobIdentifier: '" + appInput.jobIdentifier + "'" + LS);    
     } // getInputForm 
         
     /**
@@ -1102,22 +1081,17 @@ public class andrea_portlet extends GenericPortlet {
      * @param item
      * @param appInput  AppInput instance storing the jobSubmission data
      */
-    void processInputFile(FileItem item,AppInput appInput) {            
+    void processInputFile(FileItem item, AppInput appInput) {            
         // Determin the filename
         String fileName = item.getName();
-        if(!fileName.equals("")) {
+        if (!fileName.equals("")) {
             // Determine the fieldName
             String fieldName = item.getFieldName();
             
             // Create a filename for the uploaded file
-            String theNewFileName = "/tmp/"
-                                   +appInput.timestamp
-                                   +"_"
-                                   +appInput.username
-                                   +"_"
-                                   +fileName;        
+            String theNewFileName = "/tmp/" + appInput.timestamp + "_" + appInput.username + "_" + fileName;        
             File uploadedFile = new File(theNewFileName);
-            _log.info("Uploading file: '"+fileName+"' into '"+theNewFileName+"'");
+            _log.info("Uploading file: '" + fileName + "' into '" + theNewFileName + "'");
             try {
                 item.write(uploadedFile);
             } 
@@ -1127,16 +1101,18 @@ public class andrea_portlet extends GenericPortlet {
             // File content has to be inserted into a String variables:
             //   inputFileName -> inputFileText
             try {
-                if(fieldName.equals("file_inputFile"))
-                 appInput.inputFileText=updateString(theNewFileName);
-                 // Other params can be added as below ...
-                 //else if(fieldName.equals("..."))
-                 //   ...=updateString(theNewFileName);
-            else { // Never happens
-                 }    
+            	if (fieldName.equals("file_inputFile")) {
+            		appInput.inputFileText = updateString(theNewFileName);
+            		// Other params can be added as below ...
+                 	//else if (fieldName.equals("..."))
+                 	//   ...=updateString(theNewFileName);
+            	}
+            	else {
+            		// Never happens
+            	}    
             }
             catch (Exception e) {
-                _log.error("Caught exception while processing strings: '"+e.toString()+"'");
+                _log.error("Caught exception while processing strings: '" + e.toString() + "'");
             }
         } // if
     } // processInputFile
@@ -1149,17 +1125,12 @@ public class andrea_portlet extends GenericPortlet {
      */
     void updateFiles(AppInput appInput) {
         // First of all remomve all possible ^Ms from Strings
-        appInput.inputFileText=appInput.inputFileText.replaceAll("\r","");
+        appInput.inputFileText = appInput.inputFileText.replaceAll("\r","");
         // Now save string content into files
         // This must be done for each input sandbox file
         try {            
-            appInput.inputSandbox_inputFile="/tmp/"
-                                                +appInput.timestamp
-                                                +"_"
-                                                +appInput.username
-                                                +"_input_file.txt"
-                                                ;
-            FileWriter fwInput=new FileWriter(appInput.inputSandbox_inputFile);
+            appInput.inputSandbox_inputFile = "/tmp/" + appInput.timestamp + "_" + appInput.username + "_input_file.txt";
+            FileWriter fwInput = new FileWriter(appInput.inputSandbox_inputFile);
             BufferedWriter bwInput = new BufferedWriter(fwInput);
             bwInput.write(appInput.inputFileText);
             bwInput.close();
@@ -1182,100 +1153,91 @@ public class andrea_portlet extends GenericPortlet {
         MultiInfrastructureJobSubmission miJobSubmission = new MultiInfrastructureJobSubmission();            
         
         // Assigns all enabled infrastructures
-        InfrastructureInfo[] infrastructuresInfo=appPreferences.getEnabledInfrastructures();
-        for(int i=0; i<infrastructuresInfo.length; i++) {
-            _log.info("Adding infrastructure #"+(i+1)
-                     +" - Name: '"+infrastructuresInfo[i].getName()+"'"+LS);
+        InfrastructureInfo[] infrastructuresInfo = appPreferences.getEnabledInfrastructures();
+        for(int i = 0; i < infrastructuresInfo.length; i++) {
+            _log.info("Adding infrastructure #" + (i + 1) +
+            		  " - Name: '" + infrastructuresInfo[i].getName() + "'" + LS);
             miJobSubmission.addInfrastructure(infrastructuresInfo[i]);
         }
         
         // Check the enabled infrastructures
-        if(infrastructuresInfo.length > 0) {            
+        if (infrastructuresInfo.length > 0) {            
             // Application Id
-            int applicationId=Integer.parseInt(appPreferences.getGridOperationId());
+            int applicationId = Integer.parseInt(appPreferences.getGridOperationId());
              
             // Grid Engine' UserTraking needs the portal IP address
-            String   portalIPAddress=""; 
+            String portalIPAddress = ""; 
             try {
                 InetAddress addr = InetAddress.getLocalHost();
-                byte[] ipAddr=addr.getAddress();
-                portalIPAddress= ""+ipAddr[0]
-                               +":"+ipAddr[1]
-                               +":"+ipAddr[2]
-                               +":"+ipAddr[3];
+                byte[] ipAddr = addr.getAddress();
+                portalIPAddress = "" + ipAddr[0] + ":" + ipAddr[1] + ":" + ipAddr[2] + ":" + ipAddr[3];
             }
             catch(Exception e) {
                 _log.error("Unable to get the portal IP address");
             }            
             
             // Job details
-            String executable="/bin/sh";                       // Application executable
-            String arguments =appPreferences.getPilotScript(); // executable' arguments 
-            String outputPath="/tmp/";                         // Output Path
-            String outputFile="andrea-Output.txt";           // Distributed application standard output
-            String errorFile ="andrea-Output.txt";            // Distrubuted application standard error
-            String appFile   ="andrea-Files.tar.gz";         // Hostname output files (created by the pilot script)
+            String executable = "/bin/sh"; // Application executable
+            String arguments = appPreferences.getPilotScript(); // executable' arguments 
+            String outputPath = "/tmp/"; // Output Path
+            String outputFile = "andrea-Output.txt"; // Distributed application standard output
+            String errorFile ="andrea-Output.txt"; // Distrubuted application standard error
+            String appFile ="andrea-Files.tar.gz"; // Hostname output files (created by the pilot script)
             
             // InputSandbox (string with comma separated list of file names)
-            String inputSandbox=appServerPath+"WEB-INF/job/"        //
-                               +appPreferences.getPilotScript()     // pilot script
-                               +","+appInput.inputSandbox_inputFile // input file
-                               ;  
+            String inputSandbox = appServerPath + "WEB-INF/job/" + //
+                                  appPreferences.getPilotScript() + "," + // pilot script
+                                  appInput.inputSandbox_inputFile; // input file
             // OutputSandbox (string with comma separated list of file names)
-            String outputSandbox=appFile;                                     // Output file
+            String outputSandbox = appFile; // Output file
              
             // Take care of job requirements
             // More requirements can be specified in the preference value 'jobRequirements'
             // separating each requirement by the ';' character
             String jdlRequirements[] = appPreferences.getJobRequirements().split(";");
-            int numRequirements=0;
-            for(int i=0; i<jdlRequirements.length; i++) {
-                if(!jdlRequirements[i].equals("")) {
-                  jdlRequirements[numRequirements] = "JDLRequirements=("+jdlRequirements[i]+")";
+            int numRequirements = 0;
+            for (int i = 0; i < jdlRequirements.length; i++) {
+                if (!jdlRequirements[i].equals("")) {
+                  jdlRequirements[numRequirements] = "JDLRequirements=(" + jdlRequirements[i] + ")";
                   numRequirements++;
-                  _log.info("Requirement["+i+"]='"+jdlRequirements[i]+"'");
+                  _log.info("Requirement[" + i + "]='" + jdlRequirements[i] + "'");
                 }                
             } // for each jobRequirement
              
             // Other job initialization settings
-            miJobSubmission.setExecutable (   executable); // Specify the executeable
-            miJobSubmission.setArguments  (    arguments); // Specify the application' arguments
-            miJobSubmission.setOutputPath (   outputPath); // Specify the output directory 
+            miJobSubmission.setExecutable(executable); // Specify the executeable
+            miJobSubmission.setArguments(arguments); // Specify the application' arguments
+            miJobSubmission.setOutputPath(outputPath); // Specify the output directory 
             miJobSubmission.setOutputFiles(outputSandbox); // Setup output files (OutputSandbox)
-            miJobSubmission.setJobOutput  (   outputFile); // Specify the std-outputr file
-            miJobSubmission.setJobError   (    errorFile); // Specify the std-error file
-            if(   null != inputSandbox                     // Setup input files (InputSandbox) avoiding empty inputSandboxes
-               && inputSandbox.length() > 0)
-                miJobSubmission.setInputFiles(inputSandbox);  
-            if(numRequirements>0)                          // Setup the JDL requirements
-                miJobSubmission.setJDLRequirements(jdlRequirements);
+            miJobSubmission.setJobOutput(outputFile); // Specify the std-outputr file
+            miJobSubmission.setJobError(errorFile); // Specify the std-error file
+            
+            // Setup input files (InputSandbox) avoiding empty inputSandboxes
+            if (null != inputSandbox && inputSandbox.length() > 0) miJobSubmission.setInputFiles(inputSandbox);
+            // Setup the JDL requirements
+            if (numRequirements > 0) miJobSubmission.setJDLRequirements(jdlRequirements);
              
             // Submit Job
             miJobSubmission.submitJobAsync(appInput.username, portalIPAddress, applicationId, appInput.jobIdentifier);
             
             // Show log
             // View jobSubmission details in the log
-            _log.info(
-               LS+"JobSent"
-              +LS+"-------"
-              +LS+"Portal address: '"+portalIPAddress+"'"
-              +LS+"Executable    : '"+executable     +"'"
-              +LS+"Arguments     : '"+arguments      +"'"
-              +LS+"Output path   : '"+outputPath     +"'"
-              +LS+"Output sandbox: '"+outputSandbox  +"'"
-              +LS+"Ouput file    : '"+outputFile     +"'"
-              +LS+"Error file    : '"+errorFile      +"'"
-              +LS+"Input sandbox : '"+inputSandbox   +"'"
-              +LS); // _log.info        
+            _log.info(LS + "JobSent" + LS + "-------" + LS + 
+            		"Portal address: '" + portalIPAddress + "'" + LS + 
+            		"Executable    : '" + executable + "'" + LS + 
+            		"Arguments     : '" + arguments + "'" + LS + 
+            		"Output path   : '" + outputPath + "'" + LS + 
+            		"Output sandbox: '" + outputSandbox + "'" + LS + 
+            		"Ouput file    : '" + outputFile + "'" + LS + 
+            		"Error file    : '" + errorFile + "'" + LS + 
+            		"Input sandbox : '" + inputSandbox + "'" + LS); // _log.info        
              
         } // numInfra > 0
         else {
-            _log.warn(
-                   LS+"There are no enough enabled infrastructures!"
-                  +LS+"It is impossible to send any job"
-                  +LS+"Configure the application preferences in order to setup"
-                  +LS+"or enable at least one infrastructure."
-                  +LS);
+            _log.warn(LS + "There are no enough enabled infrastructures!" + LS +
+            		"It is impossible to send any job" + LS + 
+            		"Configure the application preferences in order to setup" + LS + 
+            		"or enable at least one infrastructure." + LS);
         } // numInfra == 0                    
    } // submitJob
 } // andrea_portlet

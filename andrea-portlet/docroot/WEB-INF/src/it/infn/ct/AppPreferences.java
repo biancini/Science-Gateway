@@ -23,18 +23,11 @@ limitations under the License.
 package it.infn.ct;
 
 // Java
+import it.infn.ct.GridEngine.Job.InfrastructureInfo;
+
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ArrayList;
-
-// Import AppLogger
-import it.infn.ct.AppLogger;
-
-// Importing GridEngine Job libraries 
-import it.infn.ct.GridEngine.Job.*;
-import it.infn.ct.GridEngine.Job.InfrastructureInfo;
-import it.infn.ct.GridEngine.UsersTracking.UsersTrackingDBInterface;
-import it.infn.ct.GridEngine.Job.MultiInfrastructureJobSubmission;
 
 /** 
  * This object is used to store the values of portlet preferences
@@ -52,27 +45,27 @@ public class AppPreferences {
     //     the replaceAll("\n","") has to be used 
     private static final String LS = System.getProperty("line.separator");        
     
-    private String                      gridOperationDesc;
-    private String                      portletVersion;        
-    private String                      logLevel;
-    private String                      gridOperationId="-1";
-    private String                      numInfrastructures;
-    private List<AppInfrastructureInfo> appInfrastructuresInfo;    
-    private String                      sciGwyUserTrackingDB_Hostname; 
-    private String                      sciGwyUserTrackingDB_Username;  
-    private String                      sciGwyUserTrackingDB_Password;
-    private String                      sciGwyUserTrackingDB_Database;
-    private String                      jobRequirements;
-    private String                      pilotScript;
+    private String gridOperationDesc = null;
+    private String portletVersion = null;        
+    private String logLevel = null;
+    private String gridOperationId = "-1";
+    private String numInfrastructures = null;
+    private List<AppInfrastructureInfo> appInfrastructuresInfo = null;    
+    private String sciGwyUserTrackingDB_Hostname = null; 
+    private String sciGwyUserTrackingDB_Username = null;  
+    private String sciGwyUserTrackingDB_Password = null;
+    private String sciGwyUserTrackingDB_Database = null;
+    private String jobRequirements = null;
+    private String pilotScript = null;
     
     // Following values range from 1 to numInfrastructures
     // It is used by the preference edit pane to scroll
     // among inserted infrastructures
-    private int                     currPaneInfrastucture;
-    private int                     inumInfrastructures;                
+    private int currPaneInfrastucture = 0;
+    private int inumInfrastructures = 0;                
     
     // AppLogger
-    AppLogger _log=null;
+    AppLogger _log = null;
     
     /**
      * AppPreference standard constructor 
@@ -82,25 +75,23 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public AppPreferences() { 
-         gridOperationDesc
-        =portletVersion
-        =logLevel        
-        =numInfrastructures
-        =sciGwyUserTrackingDB_Hostname
-        =sciGwyUserTrackingDB_Username
-        =sciGwyUserTrackingDB_Password
-        =sciGwyUserTrackingDB_Database                                                   
-        =jobRequirements
-        =pilotScript
-        ="";
+    	gridOperationDesc = "";
+        portletVersion = "";
+        logLevel = "";
+        numInfrastructures = "";
+        sciGwyUserTrackingDB_Hostname = "";
+        sciGwyUserTrackingDB_Username = "";
+        sciGwyUserTrackingDB_Password = "";
+        sciGwyUserTrackingDB_Database = "";                                                   
+        jobRequirements = "";
+        pilotScript = "";
 
         // Initialize Infrastructure Info                
         appInfrastructuresInfo = new ArrayList<AppInfrastructureInfo>();
 
         // Initialize the paneInfrastructure;
-         currPaneInfrastucture // 1-numInfrastructures
-        =inumInfrastructures
-        =0;                      
+        currPaneInfrastucture = 0; // 1-numInfrastructures
+        inumInfrastructures = 0; 
     } // AppPreferences
     
     /**
@@ -113,7 +104,7 @@ public class AppPreferences {
      */
     public AppPreferences(AppLogger _log) {
         this();
-        this._log=_log;
+        this._log = _log;
         _log.info("Logger linked to AppPreferences");        
     }     
         
@@ -126,7 +117,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setGridOperationDesc(String gridOperationDesc) {
-        this.gridOperationDesc=gridOperationDesc;
+        this.gridOperationDesc = gridOperationDesc;
     }
     
     /**
@@ -149,7 +140,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setGridOperationId(String gridOperationId) {
-        this.gridOperationId=gridOperationId;
+        this.gridOperationId = gridOperationId;
     }
     
     /**
@@ -161,8 +152,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getGridOperationId() {
-        return (   gridOperationId==null
-                || gridOperationId.equals(""))?"-1":gridOperationId;
+        return (gridOperationId == null || gridOperationId.equals("")) ? "-1" : gridOperationId;
     }
     
     /**
@@ -174,13 +164,13 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setNumInfrastructures(String numInfras) {
-         numInfrastructures=numInfras;
-        inumInfrastructures=Integer.parseInt(numInfras);   
-        if(currPaneInfrastucture==0)
-          currPaneInfrastucture=1; // by default assigns the 1st Infrastructure
+        numInfrastructures = numInfras;
+        inumInfrastructures = Integer.parseInt(numInfras);   
+        
+        if(currPaneInfrastucture == 0) currPaneInfrastucture = 1; // by default assigns the 1st Infrastructure
+
         // For each unallocated Infrastructure create its space
-        for(int i=this.appInfrastructuresInfo.size(); i<inumInfrastructures; i++)
-            this.appInfrastructuresInfo.add(new AppInfrastructureInfo());
+        for (int i = appInfrastructuresInfo.size(); i < inumInfrastructures; i++) appInfrastructuresInfo.add(new AppInfrastructureInfo());
     } // setNumInfrastructures
     
     /**
@@ -216,7 +206,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setCurrInfrastructure(String currInfrastructure) {
-        this.currPaneInfrastucture=Integer.parseInt(currInfrastructure);
+        this.currPaneInfrastucture = Integer.parseInt(currInfrastructure);
     } // setCurrInfrastructure
     
     /**
@@ -227,10 +217,9 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void switchNextInfrastructure() {
-        if(inumInfrastructures > 0) {
+        if (inumInfrastructures > 0) {
             currPaneInfrastucture++;
-            if(currPaneInfrastucture > inumInfrastructures)
-                currPaneInfrastucture=1;
+            if (currPaneInfrastucture > inumInfrastructures) currPaneInfrastucture = 1;
         }
     } // switchNextInfrastructure
     
@@ -244,8 +233,7 @@ public class AppPreferences {
     public void switchPreviousInfrastructure() {
         if(inumInfrastructures > 0) {
             currPaneInfrastucture--;
-            if(currPaneInfrastucture <= 0)
-                currPaneInfrastucture = inumInfrastructures;  
+            if (currPaneInfrastucture <= 0) currPaneInfrastucture = inumInfrastructures;  
         }
     } // switchPreviousInfrastructure
         
@@ -261,15 +249,10 @@ public class AppPreferences {
         if(inumInfrastructures > 1) {            
             AppInfrastructureInfo delInfrastructure = appInfrastructuresInfo.remove(currPaneInfrastucture-1);
             // 1st Pane remains unchanged
-            if(currPaneInfrastucture > 1) 
-                currPaneInfrastucture--;
-            if(_log != null) 
-                _log.info(LS+"Deleted infrastructure"
-                         +LS+"----------------------"
-                         +delInfrastructure.dump()
-                        );
+            if (currPaneInfrastucture > 1)  currPaneInfrastucture--;
+            if (_log != null) _log.info(LS+"Deleted infrastructure" + LS + "----------------------" + delInfrastructure.dump());
             // Now reduce the number of insfrastructures
-            setNumInfrastructures(""+(--inumInfrastructures));            
+            setNumInfrastructures(Integer.toString(--inumInfrastructures));            
         }
     } // delCurrInfrastructure
     
@@ -281,32 +264,20 @@ public class AppPreferences {
      */
     public void addNewInfrastructure() {
         // Set adds the new infrastructure into the InfrastructureInfo list
-        setNumInfrastructures(""+(++inumInfrastructures));
+        setNumInfrastructures(Integer.toString(++inumInfrastructures));
         // Now setup new default values to the new infrastructure
-        appInfrastructuresInfo.get(inumInfrastructures-1).setInfrastructure(
-                  AppInfrastructureInfo.DEF_enableInfrastructure
-                , AppInfrastructureInfo.DEF_nameInfrastructure
-                , AppInfrastructureInfo.DEF_acronymInfrastructure
-                , AppInfrastructureInfo.DEF_bdiiHost
-                , AppInfrastructureInfo.DEF_wmsHosts
-                , AppInfrastructureInfo.DEF_pxServerHost
-                , AppInfrastructureInfo.DEF_pxServerPort
-                , AppInfrastructureInfo.DEF_pxServerSecure
-                , AppInfrastructureInfo.DEF_pxRobotId
-                , AppInfrastructureInfo.DEF_pxRobotVO
-                , AppInfrastructureInfo.DEF_pxRobotRole
-                , AppInfrastructureInfo.DEF_pxRobotRenewalFlag
-                , AppInfrastructureInfo.DEF_pxUserProxy
-                , AppInfrastructureInfo.DEF_softwareTags
-               );        
+        appInfrastructuresInfo.get(inumInfrastructures - 1).setInfrastructure(
+                  AppInfrastructureInfo.DEF_enableInfrastructure, AppInfrastructureInfo.DEF_nameInfrastructure, AppInfrastructureInfo.DEF_acronymInfrastructure,
+                  AppInfrastructureInfo.DEF_bdiiHost, AppInfrastructureInfo.DEF_wmsHosts, AppInfrastructureInfo.DEF_pxServerHost,
+                  AppInfrastructureInfo.DEF_pxServerPort, AppInfrastructureInfo.DEF_pxServerSecure, AppInfrastructureInfo.DEF_pxRobotId,
+                  AppInfrastructureInfo.DEF_pxRobotVO, AppInfrastructureInfo.DEF_pxRobotRole, AppInfrastructureInfo.DEF_pxRobotRenewalFlag,
+                  AppInfrastructureInfo.DEF_pxUserProxy, AppInfrastructureInfo.DEF_softwareTags);        
+
         // Point the current infrastructure the new-one
-        currPaneInfrastucture=inumInfrastructures;        
+        currPaneInfrastucture = inumInfrastructures;        
+
         // Show changes if possible
-        if(_log != null) 
-            _log.info(LS+"Added infrastructure"
-                        +LS+"-----------------"
-                        +appInfrastructuresInfo.get(inumInfrastructures-1).dump()
-                    );
+        if (_log != null) _log.info(LS+"Added infrastructure" + LS + "-----------------" + appInfrastructuresInfo.get(inumInfrastructures - 1).dump());
     } // addNewInfrastructure
     
     /**
@@ -330,7 +301,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setLogLevel(String logLevel) {
-        this.logLevel=logLevel;
+        this.logLevel = logLevel;
     }
     
     
@@ -343,7 +314,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setPortletVersion(String portletVersion) {
-        this.portletVersion=portletVersion;
+        this.portletVersion = portletVersion;
     }
     
     /**
@@ -379,7 +350,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setJobRequirements(String jobRequirements) {
-        this.jobRequirements=jobRequirements;
+        this.jobRequirements = jobRequirements;
     }    
     
     /**
@@ -403,7 +374,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public void setPilotScript(String pilotScript) {
-        this.pilotScript=pilotScript;
+        this.pilotScript = pilotScript;
     }
     
     /**
@@ -431,9 +402,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */    
     public String getEnableInfrastructure(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getEnableInfrastructure();           
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getEnableInfrastructure();           
         return retValue;
     }
     
@@ -447,9 +417,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getNameInfrastructure(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getNameInfrastructure();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getNameInfrastructure();
         return retValue;
     }
     
@@ -463,9 +432,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getAcronymInfrastructure(int i) {
-       String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getAcronymInfrastructure();
+       String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getAcronymInfrastructure();
         return retValue;
     }
     
@@ -479,8 +447,7 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */public String getBdiiHost(int i) {
         String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getBdiiHost();
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getBdiiHost();
         return retValue;
     }
     
@@ -494,9 +461,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getWmsHosts(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getWmsHosts();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getWmsHosts();
         return retValue;
     }
     
@@ -510,9 +476,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getPxServerHost(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getPxServerHost();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getPxServerHost();
         return retValue;
     }
     
@@ -526,9 +491,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getPxServerPort(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getPxServerPort();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getPxServerPort();
         return retValue;
     }
     
@@ -542,9 +506,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getPxServerSecure(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getPxServerSecure();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getPxServerSecure();
         return retValue;
     }
     
@@ -558,9 +521,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getPxRobotId(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getPxRobotId();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getPxRobotId();
         return retValue;
     }
     
@@ -574,9 +536,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getPxRobotVO(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getPxRobotVO();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getPxRobotVO();
         return retValue;
     }
     
@@ -622,9 +583,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getPxUserProxy(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getPxUserProxy();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getPxUserProxy();
         return retValue;
     }
     
@@ -638,9 +598,8 @@ public class AppPreferences {
      * @see         AppInfrastructureInfo
      */
     public String getSoftwareTags(int i) {
-        String retValue="";
-        if(appInfrastructuresInfo != null)
-            retValue=appInfrastructuresInfo.get(i).getSoftwareTags();
+        String retValue = "";
+        if (appInfrastructuresInfo != null) retValue = appInfrastructuresInfo.get(i).getSoftwareTags();
         return retValue;
     } 
     
@@ -653,7 +612,7 @@ public class AppPreferences {
      * 
      */
     public void setSciGwyUserTrackingDB_Hostname(String sciGwyUserTrackingDB_Hostname) {
-        this.sciGwyUserTrackingDB_Hostname=sciGwyUserTrackingDB_Hostname;
+        this.sciGwyUserTrackingDB_Hostname = sciGwyUserTrackingDB_Hostname;
     }
     
     /**
@@ -677,7 +636,7 @@ public class AppPreferences {
      * 
      */
     public void setSciGwyUserTrackingDB_Username(String sciGwyUserTrackingDB_Username) {
-        this.sciGwyUserTrackingDB_Username=sciGwyUserTrackingDB_Username;
+        this.sciGwyUserTrackingDB_Username = sciGwyUserTrackingDB_Username;
     }
     
     /**
@@ -701,7 +660,7 @@ public class AppPreferences {
      * 
      */
     public void setSciGwyUserTrackingDB_Password(String sciGwyUserTrackingDB_Password) {
-        this.sciGwyUserTrackingDB_Password=sciGwyUserTrackingDB_Password;
+        this.sciGwyUserTrackingDB_Password = sciGwyUserTrackingDB_Password;
     }
     
     /**
@@ -725,7 +684,7 @@ public class AppPreferences {
      * 
      */
     public void setSciGwyUserTrackingDB_Database(String sciGwyUserTrackingDB_Database) {
-        this.sciGwyUserTrackingDB_Database=sciGwyUserTrackingDB_Database;
+        this.sciGwyUserTrackingDB_Database = sciGwyUserTrackingDB_Database;
     }
     /**
      * Get the AppPreference Science Gateway' User Tracking DB database name    
@@ -765,61 +724,25 @@ public class AppPreferences {
      * @see         AppPreferences
      * 
      */
-    public void setInfrastructure(
-              int i
-            , String enableInfrastructure
-            , String nameInfrastructure
-            , String acronymInfrastructure
-            , String bdiiHost
-            , String wmsHosts
-            , String pxServerHost
-            , String pxServerPort
-            , String pxServerSecure
-            , String pxRobotId
-            , String pxRobotVO
-            , String pxRobotRole
-            , String pxRobotRenewalFlag
-            , String pxUserProxy
-            , String softwareTags
-            ) {
-        int j=i+1;
-        if(j <= appInfrastructuresInfo.size())           
-            appInfrastructuresInfo.get(i).setInfrastructure(                    
-                                                  enableInfrastructure
-                                                , nameInfrastructure
-                                                , acronymInfrastructure
-                                                , bdiiHost
-                                                , wmsHosts
-                                                , pxServerHost
-                                                , pxServerPort
-                                                , pxServerSecure
-                                                , pxRobotId
-                                                , pxRobotVO
-                                                , pxRobotRole                    
-                                                , pxRobotRenewalFlag                    
-                                                , pxUserProxy
-                                                , softwareTags
-                                               );
-        else appInfrastructuresInfo.add(new AppInfrastructureInfo(
-                                                  enableInfrastructure
-                                                , nameInfrastructure
-                                                , acronymInfrastructure
-                                                , bdiiHost
-                                                , wmsHosts
-                                                , pxServerHost
-                                                , pxServerPort
-                                                , pxServerSecure
-                                                , pxRobotId
-                                                , pxRobotVO
-                                                , pxRobotRole                    
-                                                , pxRobotRenewalFlag                    
-                                                , pxUserProxy
-                                                , softwareTags
-                                            ));        
+    public void setInfrastructure(int i, String enableInfrastructure, String nameInfrastructure, String acronymInfrastructure,
+    		String bdiiHost, String wmsHosts, String pxServerHost, String pxServerPort, String pxServerSecure, String pxRobotId,
+    		String pxRobotVO, String pxRobotRole, String pxRobotRenewalFlag, String pxUserProxy, String softwareTags) {
+
+    	int j = i+1;
+        if (j <= appInfrastructuresInfo.size())           
+            appInfrastructuresInfo.get(i).setInfrastructure(enableInfrastructure, nameInfrastructure, acronymInfrastructure, bdiiHost,
+            		wmsHosts, pxServerHost, pxServerPort, pxServerSecure, pxRobotId, pxRobotVO, pxRobotRole, pxRobotRenewalFlag,
+            		pxUserProxy, softwareTags);
+        else
+        	appInfrastructuresInfo.add(new AppInfrastructureInfo(enableInfrastructure, nameInfrastructure, acronymInfrastructure, bdiiHost,
+        			wmsHosts, pxServerHost, pxServerPort, pxServerSecure, pxRobotId, pxRobotVO, pxRobotRole, pxRobotRenewalFlag,
+        			pxUserProxy, softwareTags));
+        
         // Updates the number of infrastructures
-        numInfrastructures=""+(inumInfrastructures=appInfrastructuresInfo.size());   
+        inumInfrastructures = appInfrastructuresInfo.size();
+        numInfrastructures = Integer.toString(inumInfrastructures);   
         // Could be the 1st; assign to it the currPane
-        if(inumInfrastructures==1) this.currPaneInfrastucture=1;
+        if(inumInfrastructures == 1) this.currPaneInfrastucture = 1;
     } // setInfrastructure  
     
     
@@ -829,18 +752,8 @@ public class AppPreferences {
      * @see         AppPreferences
      * 
      */
-    private enum Items {
-         gridOperationDesc
-        ,portletVersion     
-        ,logLevel
-        ,gridOperationId
-        ,numInfrastructures       
-        ,sciGwyUserTrackingDB_Hostname 
-        ,sciGwyUserTrackingDB_Username  
-        ,sciGwyUserTrackingDB_Password
-        ,sciGwyUserTrackingDB_Database
-        ,jobRequirements
-        ,pilotScript
+    private enum Items { gridOperationDesc, portletVersion, logLevel, gridOperationId, numInfrastructures, sciGwyUserTrackingDB_Hostname, 
+    	sciGwyUserTrackingDB_Username, sciGwyUserTrackingDB_Password, sciGwyUserTrackingDB_Database, jobRequirements, pilotScript
     }
     
     /**
@@ -855,62 +768,41 @@ public class AppPreferences {
      */
     public void updateValue(String prefItem, String prefValue ) {        
         switch(Items.valueOf(prefItem)) {
-            case gridOperationDesc:
-                if(   !prefValue.equals("")                  
-                   && !gridOperationDesc.equals(prefValue)   
-                  ) gridOperationDesc=prefValue;
-                break;
-            case portletVersion:
-                if(   !prefValue.equals("")                  
-                   && !portletVersion.equals(prefValue)   
-                  ) portletVersion=prefValue;
-                break;
-            case logLevel:
-                if(   !prefValue.equals("")               
-                   && !logLevel.equals(prefValue)  
-                  ) logLevel=prefValue;
-                break;     
-            case gridOperationId:
-                if(   !prefValue.equals("")             
-                   && !gridOperationId.equals(prefValue) 
-                  ) gridOperationId=prefValue;
-                break;    
-            case numInfrastructures:
-                if(   !prefValue.equals("")              
-                   && !numInfrastructures.equals(prefValue)
-                  ) setNumInfrastructures(prefValue);
-                break;  
-            case sciGwyUserTrackingDB_Hostname:
-                if(   !prefValue.equals("")              
-                   && !sciGwyUserTrackingDB_Hostname.equals(prefValue)
-                  ) sciGwyUserTrackingDB_Hostname=prefValue;
-                break;  
-            case sciGwyUserTrackingDB_Username:
-                if(   !prefValue.equals("")              
-                   && !sciGwyUserTrackingDB_Username.equals(prefValue)
-                  ) sciGwyUserTrackingDB_Username=prefValue;
-                break;  
-            case sciGwyUserTrackingDB_Password:
-                if(   !prefValue.equals("")              
-                   && !sciGwyUserTrackingDB_Password.equals(prefValue)
-                  ) sciGwyUserTrackingDB_Password=prefValue;
-                break;  
-            case sciGwyUserTrackingDB_Database:
-                if(   !prefValue.equals("")              
-                   && !sciGwyUserTrackingDB_Database.equals(prefValue)
-                  ) sciGwyUserTrackingDB_Database=prefValue;
-                break; 
-            case jobRequirements:
-                if(   !prefValue.equals("")              
-                   && !jobRequirements.equals(prefValue)
-                  ) jobRequirements=prefValue;
-                break;  
-            case pilotScript:
-                if(   !prefValue.equals("")              
-                   && !pilotScript.equals(prefValue)
-                  ) pilotScript=prefValue;
-                break;  
-            default:;
+		case gridOperationDesc:
+			if (!prefValue.equals("") && !gridOperationDesc.equals(prefValue)) gridOperationDesc = prefValue;
+			break;
+		case portletVersion:
+			if (!prefValue.equals("") && !portletVersion.equals(prefValue)) portletVersion = prefValue;
+			break;
+		case logLevel:
+			if (!prefValue.equals("") && !logLevel.equals(prefValue)) logLevel = prefValue;
+			break;
+		case gridOperationId:
+			if (!prefValue.equals("") && !gridOperationId.equals(prefValue)) gridOperationId = prefValue;
+			break;
+		case numInfrastructures:
+			if (!prefValue.equals("") && !numInfrastructures.equals(prefValue)) setNumInfrastructures(prefValue);
+			break;
+		case sciGwyUserTrackingDB_Hostname:
+			if (!prefValue.equals("") && !sciGwyUserTrackingDB_Hostname.equals(prefValue)) sciGwyUserTrackingDB_Hostname = prefValue;
+			break;
+		case sciGwyUserTrackingDB_Username:
+			if (!prefValue.equals("") && !sciGwyUserTrackingDB_Username.equals(prefValue)) sciGwyUserTrackingDB_Username = prefValue;
+			break;
+		case sciGwyUserTrackingDB_Password:
+			if (!prefValue.equals("") && !sciGwyUserTrackingDB_Password.equals(prefValue)) sciGwyUserTrackingDB_Password = prefValue;
+			break;
+		case sciGwyUserTrackingDB_Database:
+			if (!prefValue.equals("") && !sciGwyUserTrackingDB_Database.equals(prefValue)) sciGwyUserTrackingDB_Database = prefValue;
+			break;
+		case jobRequirements:
+			if (!prefValue.equals("") && !jobRequirements.equals(prefValue)) jobRequirements = prefValue;
+			break;
+		case pilotScript:
+			if (!prefValue.equals("") && !pilotScript.equals(prefValue)) pilotScript = prefValue;
+			break;
+		default:
+			;
         }
     }
         
@@ -927,7 +819,7 @@ public class AppPreferences {
      * 
      */
     public void updateInfrastructureValue(int i, String prefItem, String prefValue) {        
-        appInfrastructuresInfo.get(i).updateInfrastructureValue(prefItem,prefValue);
+        appInfrastructuresInfo.get(i).updateInfrastructureValue(prefItem, prefValue);
     }
     
     /**
@@ -940,60 +832,47 @@ public class AppPreferences {
         //
         // Determine the number of enabled infrastructures
         //
-        int numEnabledInfrastructures=0;
-        for(int i=0; i<getNumInfrastructures(); i++) {
+        int numEnabledInfrastructures = 0;
+        for (int i = 0; i < getNumInfrastructures(); i++) {
             // Update the GridEngine' InfrastructureInfo data
             appInfrastructuresInfo.get(i).updateInfrastructureInfo();
             // Counts the number of enabled infrastructures
             if(appInfrastructuresInfo.get(i).getEnableInfrastructure().equalsIgnoreCase("yes"))                    
             numEnabledInfrastructures++;
         }
-        if(_log !=null) 
-            _log.info("Enabled infrastructures: '"+numEnabledInfrastructures+"'");
+        if (_log !=null)  _log.info("Enabled infrastructures: '" + numEnabledInfrastructures + "'");
 
         // Initialize the array of GridEngine' infrastructure objects
         InfrastructureInfo infrastructuresInfo[] = new InfrastructureInfo[numEnabledInfrastructures];
         // For each infrastructure
-        for(int i=0,h=0; i<getNumInfrastructures(); i++) {
-            int j=i+1;
+        for(int i = 0, h = 0; i < getNumInfrastructures(); i++) {
             // Take care of wms list
             // GridEngine supports a list of WMSes as an array of string
             // while the AppPreferences uses a ';' separated list of entries
             // Following code makes the necessary conversion
-            String wmsHostList[]=null;
-            if(     null != getWmsHosts(i) 
-                && !getWmsHosts(i).equals("")) {
+            String wmsHostList[] = null;
+            if (null != getWmsHosts(i) && !getWmsHosts(i).equals("")) {
                 wmsHostList = getWmsHosts(i).split(";");
-                String showWMSList=LS+"wmsHostList"
-                                  +LS+"-----------";                                         
-                for(int k=0; k<wmsHostList.length; k++)
-                    showWMSList+=LS+wmsHostList[k];
-                if(null != _log) _log.info(showWMSList);
+                String showWMSList = LS + "wmsHostList" + LS + "-----------";                                         
+                for (int k = 0; k < wmsHostList.length; k++) showWMSList += LS + wmsHostList[k];
+                if (null != _log) _log.info(showWMSList);
             } // if wmsList
+            
             if(appInfrastructuresInfo.get(i).getEnableInfrastructure().equalsIgnoreCase("yes")) {
                 // Build the infrastructure object and assign it to the infrastructure array
                 // (!)Not yet used values:
                 //    pxServerSecure
                 //    pxRobotRenewalFlag
                 //    pxUserProxy                
-                infrastructuresInfo[h++] = new InfrastructureInfo( getAcronymInfrastructure(i)
-                                                                  ,             getBdiiHost(i)                                                                
-                                                                  ,             wmsHostList
-                                                                  ,         getPxServerHost(i)
-                                                                  ,         getPxServerPort(i)
-                                                                  ,            getPxRobotId(i)
-                                                                  ,            getPxRobotVO(i)
-                                                                  ,          getPxRobotRole(i)                                                                
-                                                                  ,         getSoftwareTags(i)
-                                                                 );                 
+                infrastructuresInfo[h++] = new InfrastructureInfo(getAcronymInfrastructure(i), getBdiiHost(i),
+                		wmsHostList, getPxServerHost(i), getPxServerPort(i), getPxRobotId(i),
+                		getPxRobotVO(i), getPxRobotRole(i), getSoftwareTags(i));                 
+
                 // Shows the added infrastructure
-                if(_log !=null) 
-                    _log.info(LS+appInfrastructuresInfo.get(i).dump());
+                if (_log !=null) _log.info(LS + appInfrastructuresInfo.get(i).dump());
             } // Add enabled infrastructure
             else {
-                if(_log !=null)
-                    _log.info(LS+"Disabled infrastructure: "
-                             +LS+appInfrastructuresInfo.get(i).dump());  
+                if(_log != null) _log.info(LS + "Disabled infrastructure: " + LS + appInfrastructuresInfo.get(i).dump());  
             }
         } // for each infrastructure
         return infrastructuresInfo;
@@ -1014,11 +893,8 @@ public class AppPreferences {
      * 
      */
     private String dumpInfrastructure(int i, AppInfrastructureInfo infrastructureInfo) {
-        String dump="";
-        if(infrastructureInfo != null) {
-            dump =LS+"Infrastructure #"+i;
-            dump+=LS+infrastructureInfo.dump();
-        }
+        String dump = "";
+        if (infrastructureInfo != null) dump = LS + "Infrastructure #" + i + LS + infrastructureInfo.dump();
         return dump;
     } // dumpInfrastructure    
         
@@ -1033,13 +909,10 @@ public class AppPreferences {
      * @see         htmlDump     * 
      */
     public String dumpInfrastructure(int i) {
-        String dump="";
-        if(   appInfrastructuresInfo != null
-          && 0 <= i
-          &&      i < appInfrastructuresInfo.size()) {
-           dump=dumpInfrastructure(i+1,appInfrastructuresInfo.get(i));
-       } 
-       return dump;
+        String dump = "";
+        if (appInfrastructuresInfo != null && 0 <= i && i < appInfrastructuresInfo.size())
+        	dump = dumpInfrastructure(i + 1, appInfrastructuresInfo.get(i));
+        return dump;
     }
     
     /**
@@ -1054,12 +927,12 @@ public class AppPreferences {
      * @see         htmlDump
      * 
      */
-    private String dumpInfrastructures() {
-        String dump="";
-        int i=1;
-        Iterator it=appInfrastructuresInfo.iterator();
-        while(it.hasNext())
-            dump+=dumpInfrastructure(i++,(AppInfrastructureInfo)it.next());        
+    @SuppressWarnings("rawtypes")
+	private String dumpInfrastructures() {
+        String dump = "";
+        int i = 1;
+        Iterator it = appInfrastructuresInfo.iterator();
+        while (it.hasNext()) dump += dumpInfrastructure(i++, (AppInfrastructureInfo) it.next());        
         return dump;
     } // dumpInfrastructures
         
@@ -1079,11 +952,9 @@ public class AppPreferences {
      * 
      */
     private String htmlDumpInfrastructure(int i, AppInfrastructureInfo infrastructureInfo) {
-        String htmlDump="";
-        if(infrastructureInfo != null) {            
-            htmlDump =LS+"<b>Infrastructure #"+i+"</b>";
-            htmlDump+=LS+infrastructureInfo.htmlDump();
-        }
+        String htmlDump = "";
+        if (infrastructureInfo != null)
+            htmlDump = LS + "<b>Infrastructure #" + i + "</b>" + LS + infrastructureInfo.htmlDump();
         return htmlDump;
     } // htmlDumpInfrastructure
     
@@ -1098,13 +969,10 @@ public class AppPreferences {
      * @see         htmlDump
      */
     public String htmlDumpInfrastructure(int i) {
-        String dump="";
-        if(   appInfrastructuresInfo != null
-          && 0 <= i
-          &&      i < appInfrastructuresInfo.size()) {
-           dump=htmlDumpInfrastructure(i+1,appInfrastructuresInfo.get(i));
-       } 
-       return dump;
+        String dump = "";
+        if (appInfrastructuresInfo != null && 0 <= i && i < appInfrastructuresInfo.size())
+        	dump = htmlDumpInfrastructure(i+1, appInfrastructuresInfo.get(i));
+        return dump;
     }
     
     /**
@@ -1119,12 +987,12 @@ public class AppPreferences {
      * @see         htmlDump
      * 
      */
-    private String htmlDumpInfrastructures() {
-        String htmlDump="";
-        int i=1;
-        Iterator it=appInfrastructuresInfo.iterator();
-        while(it.hasNext())                              
-            htmlDump+=htmlDumpInfrastructure(i++,(AppInfrastructureInfo)it.next());        
+    @SuppressWarnings("rawtypes")
+	private String htmlDumpInfrastructures() {
+        String htmlDump = "";
+        int i = 1;
+        Iterator it = appInfrastructuresInfo.iterator();
+        while (it.hasNext()) htmlDump += htmlDumpInfrastructure(i++, (AppInfrastructureInfo) it.next());        
         return htmlDump;
     } // htmlDumpInfrastructures
     
@@ -1136,17 +1004,16 @@ public class AppPreferences {
      * @see         AppPreferences
      */
     public String dump() {
-        String dump=LS+"Preference values:"
-                    +LS+"-----------------"
-                    +LS+"pref_logLevel          : '"+logLevel               +"'"    
-                    +LS+"pref_gridOperationId   : '"+gridOperationId        +"'"
-                    +LS+"pref_gridOperationDesc : '"+gridOperationDesc      +"'"
-                    +LS+"pref_numInfrastructures: '"+numInfrastructures     +"'"
-                    +LS+"pref_currInfrastructure: '"+getCurrInfrastructure()+"'"
-                    +LS+dumpInfrastructures()                       
-                    +LS+"pref_jobRequirements   : '"+jobRequirements        +"'"
-                    +LS+"pref_pilotScript       : '"+pilotScript            +"'"                    
-                    +LS;
+        String dump = LS + "Preference values:" + LS + 
+                      "-----------------" + LS + 
+                      "pref_logLevel          : '" + logLevel + "'" + LS + 
+                      "pref_gridOperationId   : '" + gridOperationId + "'" + LS + 
+                      "pref_gridOperationDesc : '" + gridOperationDesc + "'" + LS + 
+                      "pref_numInfrastructures: '" + numInfrastructures + "'" + LS + 
+                      "pref_currInfrastructure: '" + getCurrInfrastructure() + "'" + LS + 
+                      dumpInfrastructures() + LS + 
+                      "pref_jobRequirements   : '" + jobRequirements + "'" + LS + 
+                      "pref_pilotScript       : '" + pilotScript + "'" + LS;
         return dump;
     } // dumpPreferences
     
@@ -1158,18 +1025,17 @@ public class AppPreferences {
      * @see         AppPreferences
      */
     public String htmlDump() {
-        String htmlDump="<table border=\"1\" cellpadding=\"10\" cellspacing=\"2\">"
-                   +LS+ "<tr><td><b>Log level</b></td><td>'"          +logLevel          +"'</td></tr>"
-                   +LS+ "<tr><td><b>Num Infrastructures</b></td><td>'"+numInfrastructures+"'</td></tr>"
-                   +LS+ "<tr><td><b>Grid operation Id</b></td><td>'"  +gridOperationId   +"'</td></tr>"
-                   +LS+ "<tr><td><b>Grid opreation Desc</b></td><td>'"+gridOperationDesc +"'</td></tr>"
-                   +LS+ "</table>"
-                   +LS+ htmlDumpInfrastructures()
-                   +LS+ "<table border=\"1\" cellpadding=\"10\" cellspacing=\"2\">"
-                   +LS+ "<tr><td><b>JobRequirements</b></td><td>'"    +jobRequirements   +"'</td></tr>"
-                   +LS+ "<tr><td><b>PilotScript</b></td><td>'"        +pilotScript       +"'</td></tr>"
-                   +LS+ "</table>"
-                   +LS;
+        String htmlDump = "<table border=\"1\" cellpadding=\"10\" cellspacing=\"2\">" + LS + 
+                   "<tr><td><b>Log level</b></td><td>'" + logLevel + "'</td></tr>" + LS + 
+                   "<tr><td><b>Num Infrastructures</b></td><td>'" + numInfrastructures + "'</td></tr>" + LS + 
+                   "<tr><td><b>Grid operation Id</b></td><td>'" + gridOperationId + "'</td></tr>" + LS + 
+                   "<tr><td><b>Grid opreation Desc</b></td><td>'" + gridOperationDesc + "'</td></tr>" + LS + 
+                   "</table>" + LS + 
+                   htmlDumpInfrastructures() + LS + 
+                   "<table border=\"1\" cellpadding=\"10\" cellspacing=\"2\">" + LS + 
+                   "<tr><td><b>JobRequirements</b></td><td>'" + jobRequirements + "'</td></tr>" + LS + 
+                   "<tr><td><b>PilotScript</b></td><td>'" + pilotScript + "'</td></tr>" + LS + 
+                   "</table>" + LS;
         return htmlDump;
     } // htmlDump        
 } // AppPreferences
