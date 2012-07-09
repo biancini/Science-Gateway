@@ -19,7 +19,7 @@
 <jsp:useBean id="gridOperationDesc" class="java.lang.String"          scope="request"/>
 <jsp:useBean id="gridOperationId"   class="java.lang.Integer"         scope="request"/>
 <jsp:useBean id="portal"            class="java.lang.String"          scope="request"/>
-<jsp:useBean id="appPreferences"    class="it.infn.ct.AppPreferences" scope="request"/>
+<jsp:useBean id="appPreferences"    class="it.infn.mib.AppPreferences" scope="request"/>
 <portlet:defineObjects />
 
 <table>

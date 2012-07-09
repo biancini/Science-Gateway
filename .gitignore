@@ -1,11 +1,4 @@
-*.class
-
-# Package Files #
-#*.jar
-#*.war
-#*.ear
-
 .project
-.checkstyle
+.pydevproject
 .settings
-build
+*.class

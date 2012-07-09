@@ -37,7 +37,8 @@ import java.util.List;
  *
  * @see AppInfrastructureInfo
  * 
- * @author <a href="mailto:riccardo.bruno@ct.infn.it">Riccardo Bruno</a>(COMETA)
+ * @author <a href="mailto:riccardo.bruno@ct.infn.it">Riccardo Bruno</a> (COMETA)
+ * @author <a href="mailto:andrea.biancini@mib.infn.it">Andrea Biancini</a> (INFN Milano Bicocca)
  */
 public class AppPreferences { 
     // Line separator
